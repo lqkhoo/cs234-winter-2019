@@ -1,0 +1,331 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc} 
+\usepackage[T1]{fontenc}    
+\usepackage{lmodern}
+\usepackage{url}            
+\usepackage{booktabs}       
+\usepackage{amsfonts}       
+\usepackage{nicefrac}       
+\usepackage{microtype}      
+\usepackage{fullpage}
+
+
+\usepackage[numbers]{natbib}
+%\usepackage[textsize=tiny]{todonotes}
+\setlength{\marginparwidth}{11ex}
+
+\newcommand{\E}{\mathbb E}
+\usepackage{wrapfig}
+\usepackage{caption}
+
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+\usepackage{url}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{upgreek}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[mathscr]{euscript}
+\usepackage{mathtools}
+\newtheorem{thm}{Theorem}
+\newtheorem{defn}{Definition}
+\newtheorem{cor}{Corollary}
+\newtheorem{assumption}{Assumption}
+\newtheorem{lem}{Lemma}
+\usepackage{xcolor}
+\usepackage{nicefrac}
+\usepackage{xr}
+%\usepackage{chngcntr}
+\usepackage{apptools}
+\usepackage[page, header]{appendix}
+\AtAppendix{\counterwithin{lem}{section}}
+\usepackage{titletoc}
+\usepackage{enumitem}
+\setlist[itemize]{leftmargin=1cm}
+\setlist[enumerate]{leftmargin=1cm}
+
+
+
+
+\definecolor{DarkRed}{rgb}{0.75,0,0}
+\definecolor{DarkGreen}{rgb}{0,0.5,0}
+\definecolor{DarkPurple}{rgb}{0.5,0,0.5}
+\definecolor{Dark}{rgb}{0.5,0.5,0}
+\definecolor{DarkBlue}{rgb}{0,0,0.7}
+\usepackage[bookmarks, colorlinks=true, plainpages = false, citecolor = DarkBlue, urlcolor = blue, filecolor = black, linkcolor =DarkGreen]{hyperref}
+\usepackage{breakurl}
+\usepackage[ruled, vlined, linesnumbered]{algorithm2e}
+\newcommand\mycommfont[1]{\footnotesize\ttfamily\textcolor{blue}{#1}}
+\SetCommentSty{mycommfont}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\allowdisplaybreaks[2]
+\newcommand{\prob}{\mathbb P}
+\newcommand{\Var}{\mathbb V}
+\newcommand{\Ex}{\mathbb E}
+\newcommand{\varV}{\mathscr V}
+\newcommand{\indicator}[1]{\mathbb I\{ #1 \} }
+\newcommand{\statespace}{\mathcal S}
+\newcommand{\actionspace}{\mathcal A}
+\newcommand{\saspace}{\statespace \times \actionspace}
+\newcommand{\satspace}{\mathcal Z}
+\newcommand{\numsa}{\left|\saspace\right|}
+\newcommand{\numsat}{\left|\satspace\right|}
+\newcommand{\numS}{S}
+\newcommand{\numA}{A}
+\newcommand{\wmin}{w_{\min}}
+\newcommand{\wminc}{w'_{\min}}
+\newcommand{\range}{\operatorname{rng}}
+\newcommand{\polylog}{\operatorname{polylog}}
+\newcommand{\dspace}{\mathcal D}
+\newcommand{\numD}{|\dspace|}
+\newcommand{\numSucc}[1]{|\statespace(#1)|}
+\newcommand{\succS}[1]{\statespace(#1)}
+
+\newcommand{\reals}{\mathbb R}
+\newcommand{\const}{\textrm{const.}}
+\newcommand{\set}[1]{\left\{#1\right\}}
+\newcommand{\llnp}{\operatorname{llnp}}
+\newcommand{\defeq}{:=}
+\usepackage{xspace}
+\newcommand{\algname}{UBEV\xspace}
+
+\newcommand{\Vfunc}[2]{\ensuremath{V^{#1}(#2)}}
+\newcommand{\Qfunc}[2]{\ensuremath{Q^{#1}(#2)}}
+
+\mathtoolsset{showonlyrefs=true}
+
+\let\temp\epsilon
+\let\epsilon\varepsilon
+\newcommand{\cK}{\mathcal K}
+\newcommand{\cI}{\mathcal I}
+\newcommand{\Pro}{\mathbb P}
+
+\title{CS 234 Winter 2018 \\ Assignment 1 \\ Due: January 23 at 11:59 pm}
+\author{ Li Quan Khoo (SCPD) }
+\date{}
+
+\begin{document}
+	\maketitle
+
+\section{Optimal Policy for Simple MDP [20 pts]}
+
+\begin{enumerate}[label=(\alph*)]
+	
+	\item Since action $a_0$ is always chosen under $\pi^*$, working backwards from state $G=S_n$, where $0 < \gamma < 1$ (i.e. small and strictly positive),
+	\begin{align*}
+	\Vfunc{\pi^*}{G=s_n}   =&\ 1+\gamma+\gamma^2+\gamma^3+... =\ \frac{1}{1-\gamma} \\ 
+	\Vfunc{\pi^*}{s_{n-1}} =&\ r(s_{n-1}, a_0) + \gamma \Vfunc{\pi^*}{s_n} =\ 0 + \gamma \frac{1}{1-\gamma} \\ 
+	\Vfunc{\pi^*}{s_{n-2}} =&\ \gamma^2 \frac{1}{1-\gamma} = \gamma^{n-(n-2)} \frac{1}{1-\gamma} \\ 
+	... \\ 
+	\Vfunc{\pi^*}{s_1}   =&\ \gamma^{n-1} \frac{1}{1-\gamma} \ ,\textrm{by induction.}
+	\end{align*}
+	Hence for any state $s_i$, its optimal value function is
+	$$\Vfunc{\pi^*}{s_i}   =\ \gamma^{n-i} \frac{1}{1-\gamma}, \textrm{where } 1 \leq i \leq n$$
+
+	
+	\item Not in this scenario, as long as $\gamma$ remains in the given range of $0 < \gamma < 1$, which makes $\frac{1}{1-\gamma}$ and $\gamma^k$ bounded for any $k\in\mathbb{N}$. For any such value of $\gamma$, consider the situation where the agent is in the state $s_i$, which has two valid actions, i.e. $a_0$ into state $s_{i+1}$, and $a_1$ into state $s_{i-1}$.
+	$$ \Vfunc{\pi^*}{s_{i-1}} = \gamma^{n-(i-1)}\frac{1}{1-\gamma} \quad <
+	\quad \gamma^{n-(i+1)}\frac{1}{1-\gamma} = \Vfunc{\pi^*}{s_{i+1}} \quad , \textrm{ for all valid } i$$
+	And, by definition of the value function,
+	\begin{align*}
+	\Vfunc{\pi}{s_i} =& \ r(s_i, \pi(s)) + \gamma \mathop{\Ex_{p(s'|s,a)\sim\pi}}[\Vfunc{\pi}{s'}] \\ 
+	               =& \ 0 + \gamma \mathop{\Ex_\pi}[\Vfunc{\pi}{s'}] \\ 
+	\end{align*}
+	Since the optimal policy maximizes $V^{\pi}(s_i)$ by definition, action $a_0$ (move right) is chosen every single time for every state $s_i$, since we have shown that for any such $\gamma$, its value function is larger. Hence we have that the optimal policy is independent of $\gamma$.
+	
+	
+	\item 
+	Deriving in the same manner as in (a),
+	\begin{align*}
+	\Vfunc{\pi^*}{G=s_n}
+	=&\ (1+c)+\gamma(1+c)+\gamma^2(1+c)+... =\ \frac{1+c}{1-\gamma} \\ 
+	\Vfunc{\pi^*}{s_{n-1}}
+	=&\ R(s_{n-1}, a_0) + \gamma \Vfunc{\pi^*}{s_n} = c + \gamma \frac{1+c}{1-\gamma} \\ 
+	\Vfunc{\pi^*}{s_{n-2}}
+	=&\ c + \gamma c + \gamma^2 \frac{1+c}{1-\gamma} \\
+	\Vfunc{\pi^*}{s_{n-3}}
+	=&\ c[1+\gamma+\gamma^2] + \gamma^3 \frac{1+c}{1-\gamma} \\
+	=&\ c\left(\frac{1-\gamma^3}{1-\gamma}\right) + \gamma^3 \frac{1+c}{1-\gamma} , \quad \textrm{ by formula of finite geometric sum.} \\
+	=&\ c\left(\frac{1-\gamma^{n-(n-3)}}{1-\gamma}\right) + \gamma^{n-(n-3)} \frac{1+c}{1-\gamma} \\ 
+	... \\ 
+	\Vfunc{\pi^*}{s_1} =&\ c(\frac{1-\gamma^{n-1}}{1-\gamma}) + \gamma^{n-1}\frac{1+c}{1-\gamma} , \quad \textrm{by induction.}
+	\end{align*}
+	Hence for any state $s_i$, its optimal value function is
+	\begin{align*}
+	\Vfunc{\pi^*}{s_i} =&\ c(\frac{1-\gamma^{n-i}}{1-\gamma}) + \gamma^{n-i}\frac{1+c}{1-\gamma} \\ 
+	=&\ \frac{c+\gamma^{n-i}}{1-\gamma} \\ 
+	\end{align*}
+	Now to show that the optimal policy doesn't change (i.e. move right every time), it is sufficient to show that $\Vfunc{\pi^*}{s_{i+1}} > \Vfunc{\pi^*}{s_{i-1}} \ \forall s_i$, which is to say $\Vfunc{\pi^*}{s_{i+1}} - \Vfunc{\pi^*}{s_{i-1}} > 0 , \ \forall s_i$.
+	\begin{align*}
+	\Vfunc{\pi^*}{s_{i+1}} - \Vfunc{\pi^*}{s_{i-1}} =&\ \frac{c+\gamma^{n-(i+1)}}{1-\gamma} - \frac{c+\gamma^{n-(i-1)}}{1-\gamma} \\
+	=&\ \frac{1}{1-\gamma}[\gamma^{n-(i+1)}-\gamma^{n-(i-1)}] \\
+	=&\ \frac{1}{1-\gamma}[\textrm{positive term}]
+	\end{align*}
+	Hence we have shown that for $0<\gamma<1$, the above expression is always positive, independent of the value of $c$. QED.
+	
+	\item 
+	By the same strategy,
+	\begin{align*}
+	\Vfunc{\pi^*}{G=s_n}
+	=&\ a(1+c)+\gamma a(1+c)+\gamma^2 a(1+c)+... =\ a\frac{1+c}{1-\gamma} \\ 
+	\Vfunc{\pi^*}{s_{n-1}}
+	=&\ R(s_{n-1}, a_0) + \gamma V^{\pi^*}(s_n) = a(c+0) + \gamma a\frac{1+c}{1-\gamma} \\ 
+	\Vfunc{\pi^*}{s_{n-2}}
+	=&\ a\left[c + \gamma c + \gamma^2 \frac{1+c}{1-\gamma}\right] \\
+	\end{align*}
+	Since the term in brackets was already derived in part (c), we can now see that for any state $s_i$, its optimal value function is now
+	\begin{align*}
+	\Vfunc{\pi^*}{s_i} =&\ a\frac{c+\gamma^{n-i}}{1-\gamma} \\ 
+	\end{align*}
+	Now taking the difference between the value functions of the states adjacent to $s_i$ again,
+	\begin{align*}
+	\Vfunc{\pi^*}{s_{i+1}} - \Vfunc{\pi^*}{s_{i-1}} =&\ a\frac{c+\gamma^{n-(i+1)}}{1-\gamma} - a\frac{c+\gamma^{n-(i-1)}}{1-\gamma} \\
+	=&\ a \frac{1}{1-\gamma}[\gamma^{n-(i+1)}-\gamma^{n-(i-1)}] \\
+	=&\ a \ [\textrm{positive term}] \ [\textrm{positive term}]
+	\end{align*}
+	It is clear from the equation that if $a < 0$, the condition $\Vfunc{\pi^*}{s_{i+1}} > \Vfunc{\pi^*}{s_{i-1}} \ \forall s_i$ no longer holds true, and we have demonstrated in part (c) that it is a necessary condition for the optimal policy to remain the same. $c$ can in fact take any bounded value, since the equation above is still independent of $c$. This is intuitive because, suppose $a=-1$ and $c=0$; instead of being rewarded in state $G$, the agent is being penalized instead. Hence the optimal policy is to not reach state $G$ at all. In fact, following the policy that was optimal for $a>0$ in this case results in the agent being penalized forever! In this particular case where $a=-1$ and $c=0$, the optimum policy is simply to not enter state G, and that gives the agent the maximal reward of 0. It is also easy to see that this policy is not unique, since there are multiple ways to do so, as long as that single transition into G is avoided.
+	
+\end{enumerate}
+
+\section{Running Time of Value Iteration [20 pts]}
+
+\begin{enumerate}[label=(\alph*)]
+	\item
+	\begin{align*}
+	\Qfunc{\pi}{s_0, a} =&\ r(s_0, a) + \gamma \Ex_{p(s'|a)\sim\pi}[\Vfunc{\pi}{s'}] , \quad \textrm{definition of Q-function} \\
+	\Qfunc{\pi_{a_1}}{s_0, a_1} =&\ r(s_0, a_1) + \gamma[\Vfunc{\pi}{s_1}] , \quad \textrm{since deterministic} \\ 
+	\Qfunc{\pi_{a_1}}{s_0, a_1} =&\ 0 + (\gamma + \gamma^2 + \gamma^3 + ...) = \frac{1}{1-\gamma} \quad
+	\end{align*}
+	
+	\item
+	\begin{align*}
+	\Qfunc{\pi_{a_2}}{s_0, a_2} =&\ r(s_0, a_2) + \gamma[\Vfunc{\pi}{s_2}] \\ 
+	\Qfunc{\pi_{a_2}}{s_0, a_2} =&\ \frac{\gamma^2}{1-\gamma} + 0 \\ 
+	\Qfunc{\pi_{a_2}}{s_0, a_2} =&\ \gamma^2 \Qfunc{\pi_{a_1}}{s_0, a_1} < \Qfunc{\pi_{a_1}}{s_0, a_1}, \textrm{ since $0<\gamma<1$}
+	\end{align*}
+	The optimal action is $a_1$, which has a larger Q-value.
+	
+	\item We need to show for what $k\in \mathbb{N}$,  $\hat{Q}^{\pi}(s_0, a_1) \geq Q^{\pi}(s_0, a_2) = \frac{\gamma^2}{1-\gamma}$ \\ 
+	\begin{align*}
+	t=&\ 0, \quad \hat{Q}^{\pi}(s_0, a_1) =\ 0 \\
+	t=&\ 1, \quad \hat{Q}^{\pi}(s_0, a_1) =\ r(s_0, a_1) + \gamma(\Vfunc{\pi}{s_1}) = 0 + \gamma(0) \\
+	t=&\ 2, \quad \hat{Q}^{\pi}(s_0, a_1) =\ \gamma^2 \\
+	t=&\ 3, \quad \hat{Q}^{\pi}(s_0, a_1) =\ \gamma^2+\gamma^3 = \gamma(\gamma+\gamma^2) \\
+	t=&\ k, \quad \hat{Q}^{\pi}(s_0, a_1) =\ \gamma(\gamma+\gamma^2+...+\gamma^{k-1}) = \gamma \frac{1-\gamma^k}{1-\gamma}, \quad \textrm{by induction.}
+	\end{align*}
+	\begin{align*}
+	\hat{Q}^{\pi}(s_0, a_1) \geq&\ \Qfunc{\pi}{s_0, a_2} \\ 
+	\gamma \frac{1-\gamma^{n^*}}{1-\gamma} \geq&\ \frac{\gamma^2}{1-\gamma} \\ 
+	1-\gamma^{n^*} \geq&\ \gamma, \quad \textrm{since $\frac{\gamma}{1-\gamma} > 0$} \\
+	\gamma^{n^*} \geq&\ 1-\gamma \\
+	n^* \geq&\ \frac{\log(1-\gamma)}{\log \gamma}, \textrm{QED}
+	\end{align*}
+	
+\end{enumerate}
+
+\section{Approximating the Optimal Value Function [35 pts]}
+
+Idea about maximal loss state $z$ is with reference to Singh, Yee. \textit{An Upper Bound on the Loss from Approximate Optimal-Value Functions}. Machine Learning, 16, 227-233 (1994).
+
+\begin{enumerate}[label=(\alph*)]
+	
+	\item $||\tilde{Q} - Q^*||_\infty \leq \epsilon$ means according to some approximating policy $\pi$, some action $b$ must appear at least as good as the optimal action $b^*$, in a state $z$ where this maximum loss occurs. We assign $\epsilon$ as the maximal difference between the two Q-values, i.e.
+	$$ |\tilde{Q}(z, b) - Q^*(z, b^*)| \leq \epsilon$$
+	By definition of the infinity norm (element-wise max), we can conclude that for any state $s$:
+	$$|Q^*(s,a^*) - \tilde{Q}(s,a)| \ \leq \ |Q^*(z, b^*) - \tilde{Q}(z, b)| \ \leq \ \epsilon \quad, \forall s \in S$$
+	Abbreviating $V^*(s), \ Q^*(s,\pi(s)),\ \tilde{Q}(s,\pi(s))$ to $V^*, Q^*, \tilde{Q}$ in just the following section:
+	\begin{align*}
+	V^*-Q^* &\leq\ |V^*-Q^*| \\ 
+	&=\ |V^*-\tilde{Q}+\tilde{Q}-Q^*| \\
+	&\leq\ |V^*-\tilde{Q}|+|\tilde{Q}-Q^*| \\
+	&=\ |Q^*(s,a^*) - \tilde{Q}| + |\tilde{Q}-Q^*| \\
+	&\leq \ \epsilon + \epsilon \\
+	&=\ 2\epsilon \quad, \textrm{QED}
+	\end{align*}
+	
+	\item
+	$$\textrm{To show: } V^\pi(s) - V^*(s) \leq \frac{2\epsilon}{1-\gamma}$$
+	\begin{align*}
+	&\ V^\pi(s) - V^*(s) \\
+	=&\ V^\pi(s) - Q^*(s,\pi(s)) + Q^*(s,\pi(s)) - V^*(s) \\
+	=&\ V^\pi(s) - Q^*(s,\pi(s)) + [Q^*(s,\pi(s)) - Q^*(s, a^*)] \\
+	\leq& \ V^\pi(s) - Q^*(s,\pi(s)) + 2\epsilon \\ 
+	=&\ [r(s,\pi(s)) + \gamma \sum_{s'}p(s'|s,\pi(s))V^\pi(s')] \ - [r(s,\pi(s)) + \gamma \sum_{s'}p(s'|s,\pi(s))V^*(s')] + 2\epsilon \\
+	=&\ 2\epsilon + \gamma\sum_{s'}p(s'|s,\pi(s))[V^\pi(s') - V^*(s')] \\
+	=&\ 2\epsilon + \gamma[V^\pi(s') - V^*(s')] \quad \because \textrm{$\pi(s)$ is deterministic (greedy)} \\
+	\end{align*}
+	Now that we have shown that:
+	\begin{align*}
+	V^\pi(s) - V^*(s) \ \leq& \ 2\epsilon + \gamma[V^\pi(s') - V^*(s')]
+	\end{align*}
+	If we now substitute this new state $s'$ into the equation above and and follow the steps exactly, we get the result and advance the state being considered one further. Then:
+	\begin{align*}
+	V^\pi(s') - V^*(s') \ \leq& \ 2\epsilon + \gamma[V^\pi(s'') - V^*(s'')] \\
+	\gamma[V^\pi(s') - V^*(s')] \ \leq& \ 2\epsilon\gamma + \gamma^2[V^\pi(s'') - V^*(s'')] \\
+	V^\pi(s) - V^*(s) \ \leq \ 2\epsilon+\gamma[V^\pi(s') - V^*(s')] \ \leq& \ 2\epsilon + 2\epsilon\gamma + \gamma^2[V^\pi(s'') - V^*(s'')] \\
+	V^\pi(s) - V^*(s) \ \leq& \ 2\epsilon + 2\epsilon\gamma + \gamma^2[V^\pi(s'') - V^*(s'')]
+	\end{align*}
+	Now we show the result by induction:
+	\begin{align*}
+	V^\pi(s) - V^*(s) \ \leq& \ 2\epsilon + 2\epsilon\gamma + \gamma^2[V^\pi(s'') - V^*(s'')] \\
+	V^\pi(s) - V^*(s) \ \leq& \ 2\epsilon + 2\epsilon\gamma + 2\epsilon\gamma^2 + \gamma^3[V^\pi(s''') - V^*(s''')] \\
+	... \\
+	V^\pi(s) - V^*(s) \ \leq& \ 2\epsilon[1+\gamma+\gamma^2+\gamma^3+...] \\ 
+	V^\pi(s) - V^*(s) \ \leq& \ \frac{2\epsilon}{1-\gamma} \quad, QED \\ 
+	\end{align*}
+	
+	\item By observation, the optimal policy $\pi$ would have $p(\mathrm{"stay"})=0$ and $p(\mathrm{"go"})=1$ simply because the action "stay" gives strictly less reward.
+	$$V^*(s_2) = 2\epsilon+2\epsilon\gamma+2\epsilon\gamma^2+... = \frac{2\epsilon}{1-\gamma}$$
+	\begin{align*}
+	V^*(s_1) =&\ r(s_1, \textrm{"go"}) + \gamma V^*(s_2) \quad \because \pi^* \textrm{ deterministic} \\
+	V^*(s_1) =&\ 2\epsilon + \gamma[2\epsilon+2\epsilon\gamma+2\epsilon\gamma^2+...] \\ 
+	=&\ \frac{2\epsilon}{1-\gamma}
+	\end{align*}
+	
+	\item
+	Reusing the idea from part (a), $||\tilde{Q} - Q^*||_\infty \leq \epsilon$ implies that there exists some maximal loss state $z$ where $|\tilde{Q}(z,\pi(z)) - Q^*(z, \pi^*(z))| < \epsilon$, which means the inequality holds true for every state $s$. \\
+	Case $\pi(s_1)=\textrm{"stay"}$:
+	\begin{align*}
+	V^\pi(s_1) =&\ r(s_1,\textrm{"stay"}) + \gamma\tilde{V}(s_1) \\
+	=&\ 0 + \gamma\tilde{V}(s_1) \implies \tilde{V}(s_1) = 0 \\
+	V^\pi(s_1) - V^*(s_1) =&\ -\frac{2\epsilon}{1-\gamma} \quad ,\textrm{QED as required}
+	\end{align*}
+	For the other case where $\pi(s_1)=\textrm{"go"}$, because it would mean that $\pi$ would be an optimal policy, we would expect the error to be exactly zero. \\
+	\begin{align*}
+	\tilde{V}(s_1) =&\ r(\pi,\textrm{"go"}) + \gamma\tilde{V}(s_2) \\
+	=&\ 2\epsilon + \gamma \tilde{V}(s_2) \\
+	\tilde{V}(s_2) =&\ r(s_2,\pi(s_2)) + \gamma \tilde{V}(s_2) \\
+	=&\ 2\epsilon + \gamma \tilde{V}(s_2) \\
+	=&\ \frac{2\epsilon}{1-\gamma} \\
+	\tilde{V}(s_1) =&\ 2\epsilon + \gamma \frac{2\epsilon}{1-\gamma} \\
+	=&\ 2\epsilon + \gamma [2\epsilon+2\epsilon\gamma+2\epsilon\gamma^2+...] \\
+	=&\ \frac{2\epsilon}{1-\gamma} = V^*(s_1) \\
+	\tilde{V}(s_1) - V^*(s_1) =&\ 0 
+	\end{align*}
+	Now the only thing left to do is to demonstrate that $\tilde{Q}$ and $Q^*$ for states $s_1$ and $s_2$ satisfies the given inequality for some greedy policy.
+	\begin{align*}
+	|\tilde{Q}(s_2, \pi(s_2)) - Q^*(s_2, \pi^*(s_2))| =&\ |\tilde{V}(s_2) - V^*(s_2)| = 0 \leq \epsilon \\
+	|\tilde{Q}(s_1, \pi(s_1)=\textrm{"go"}) - Q^*(s_1, \pi^*(s_1))| =&\ 0 \leq \epsilon \quad \textrm{as demonstrated previously}
+	\end{align*}
+	This result is expected since the optimal policy is also a greedy one. QED.
+	
+\end{enumerate}
+
+\section{Frozen Lake MDP [25 pts]}
+
+\begin{enumerate}[label=(\alph*)]
+
+\item (code)
+\item (code)
+\item The optimal policy is different to the one in the deterministic case, and the number of iterations required increases. Due to the environment not always responding with the chosen movement, despite having an optimal policy or value function, the agent can still fail to reach the goal.
+	
+\end{enumerate}
+
+\end{document} 
