@@ -1,5 +1,6 @@
 *.pyc
 *.aux
 *.log
+*.out
 *.gz
 *.zip
