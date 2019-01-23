@@ -57,10 +57,10 @@ def as_tensor(P, nS, nA):
             for a in range(nA):
                 # P[s][a] is a list of (prob, s_next, r, is_terminal) from taking a from s
                 for i in range(len(P[s][a])):
-                    s2 = P[s][a][i][1] # valid state transition
-                    prob[s][a][s2] = P[s][a][i][0] # probability of that transition
+                    s2 = P[s][a][i][1]              # valid state transition
                     s_next[s][a][s2] = s2
-                    r[s][a][s2] = P[s][a][i][2] # reward of that transition
+                    prob[s][a][s2] += P[s][a][i][0] # probability of that transition. += because sometimes we have the same transition defined twice...
+                    r[s][a][s2] += P[s][a][i][2]    # reward of that transition
 
         as_tensor.prob   = prob    # Tensor: shape (nS, nA, nS)
         as_tensor.s_next = s_next  # Tensor: shape (nS, nA, nS)
@@ -78,7 +78,14 @@ def as_tensor(P, nS, nA):
     # 2 = right
     # 3 = up
 
-    return as_tensor.prob, as_tensor.s_next, as_tensor.r
+    # Make sure probabilities of each (s,a) sum to 1
+    assert(np.array_equal(np.sum(as_tensor.prob, axis=2), np.ones((nS,nA))))
+    # Make sure probability of transitioning to undefined next states are all 0
+    assert(np.sum(as_tensor.prob * (as_tensor.s_next==-1).astype(int)) == 0)
+    # Make sure each valid state and action has full probability of transitioning
+    assert(np.sum(as_tensor.prob * (as_tensor.s_next!=-1).astype(int)) == nA*nS)
+
+    return (as_tensor.prob, as_tensor.s_next, as_tensor.r)
 
 
 
@@ -108,12 +115,11 @@ def policy_evaluation(P, nS, nA, policy, gamma=0.9, tol=1e-3):
     # Vectorize so it's easier to work with
     (prob, s_next, r) = as_tensor(P, nS, nA) # Tensors: shape (nS, nA, nS)
 
-    V = value_function          # Vector: shape (nS,)
-    V_new = V.copy()            # Vector: shape (nS,)
-    
-    s = np.arange(nS)
+    V = value_function # Vector: shape (nS,)
+    s = np.arange(nS, dtype=int)
     while True:
-        Q = prob * (r + gamma * V[s_next])  # prob of all invalid state transitions are zero so V[s'=-1] doesn't matter
+        
+        Q = prob * (r + gamma * V[s_next])  # prob of all undefined state transitions are zero
         Q = np.sum(Q, axis=2)               # Sum across s'. Shape: (nS, nA).
         V_new = Q[s, policy[s]]             # Now that we have the matrix Q(s,a) just pick out the entries for a = pi(s)
 
@@ -154,9 +160,9 @@ def policy_improvement(P, nS, nA, value_from_policy, policy, gamma=0.9):
     V_pi = value_from_policy
 
     # Vectorize so it's easier to work with
-    (prob, s_next, r) = as_tensor(P, nS, nA) # Tensors: shape (nS, nA, nS)
+    (prob, s_next, r) = as_tensor(P, nS, nA)  # Tensors: shape (nS, nA, nS)
 
-    Q_pi = prob * (r + gamma * V_pi[s_next])  # prob of all invalid state transitions are zero so V[s'=-1] doesn't matter
+    Q_pi = prob * (r + gamma * V_pi[s_next])  # prob of all undefined state transitions are zero
     Q_pi = np.sum(Q_pi, axis=2)               # Sum across s'. Shape: (nS, nA).
     new_policy = np.argmax(Q_pi, axis=1)      # Greedy policy: pi(s) = argmax_a[Q_pi]. For each state, pick the action that maximizes Q_pi
 
@@ -187,19 +193,17 @@ def policy_iteration(P, nS, nA, gamma=0.9, tol=10e-3):
     ############################
     # YOUR IMPLEMENTATION HERE #
 
-    V = value_function # Set alias
-    V = policy_evaluation(P, nS, nA, policy, gamma)
-
     while True:
-        policy_new = policy_improvement(P, nS, nA, V, policy, gamma)
-        V_new = policy_evaluation(P, nS, nA, policy_new, gamma)
+        V = policy_evaluation(P, nS, nA, policy, gamma)
+        policy_new = policy_improvement(P, nS, nA, V, policy, gamma) # argmax step
         if np.array_equal(policy, policy_new): # Terminate if policy has become stable across iterations
             break
-        V = V_new.copy()
         policy = policy_new.copy()
 
+    value_function = V
     ############################
     return value_function, policy
+
 
 def value_iteration(P, nS, nA, gamma=0.9, tol=1e-3):
     """
@@ -228,13 +232,13 @@ def value_iteration(P, nS, nA, gamma=0.9, tol=1e-3):
     (prob, s_next, r) = as_tensor(P, nS, nA) # Tensors: shape (nS, nA, nS)
 
     V = value_function
+    V_new = V.copy()
     while True:
-        V_new = np.zeros(nS, dtype=float)
-
+        
         ### Sutton & Barto eq (4.10)
         ### V(s) := max_a[ p(s',r|s,a) * sum_s'[r(s,a,s') + gamma*V(s')] ]
 
-        Q = prob * (r + gamma * V[s_next])  # prob of all invalid state transitions are zero so V[s'=-1] doesn't matter
+        Q = prob * (r + gamma * V[s_next])  # prob of all undefined state transitions are zero
         Q = np.sum(Q, axis=2)               # Sum across s'. Shape: (nS, nA)
         np.maximum(V_new, np.max(Q, axis=1), out=V_new) # Best V(s) is just best Q(s,a) among the actions available in each s
         if np.linalg.norm(V - V_new, ord=np.inf) < tol:
@@ -242,9 +246,10 @@ def value_iteration(P, nS, nA, gamma=0.9, tol=1e-3):
         V = V_new.copy()
 
     policy = policy_improvement(P, nS, nA, V_new, policy, gamma)
-
+    value_function = V_new.copy()
     ############################
     return value_function, policy
+
 
 def render_single(env, policy, max_steps=100):
     """
@@ -303,11 +308,13 @@ if __name__ == "__main__":
     print("\n" + "-"*25 + "\nBeginning Policy Iteration\n" + "-"*25)
 
     V_pi, p_pi = policy_iteration(env.P, env.nS, env.nA, gamma=0.9, tol=1e-3)
+    print(V_pi[0])
     # render_single(env, p_pi, 100)
-    run_n(env, p_pi, 100, 1000)
+    run_n(env, p_pi, 100, 100)
 
     print("\n" + "-"*25 + "\nBeginning Value Iteration\n" + "-"*25)
 
     V_vi, p_vi = value_iteration(env.P, env.nS, env.nA, gamma=0.9, tol=1e-3)
+    print(V_vi[0])
     # render_single(env, p_vi, 100)
-    run_n(env, p_vi, 100, 1000)
+    run_n(env, p_vi, 100, 100)
