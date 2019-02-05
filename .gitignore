@@ -4,4 +4,7 @@
 *.out
 *.gz
 *.zip
+*blx.bib
+*bbl
+*blg
 *assignment2/results/*
