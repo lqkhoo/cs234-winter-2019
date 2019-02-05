@@ -116,26 +116,13 @@ def policy_evaluation(P, nS, nA, policy, gamma=0.9, tol=1e-3):
     (prob, s_next, r) = as_tensor(P, nS, nA) # Tensors: shape (nS, nA, nS)
 
     V = value_function # Vector: shape (nS,)
-    V_new = V.copy()
     s = np.arange(nS, dtype=int)
     while True:
-
-        """
-        for s in range(nS):
-            q = 0
-            for a in range(nA):
-                if a != policy[s]:
-                    continue
-                for prob, s2, r, _ in P[s][a]:
-                    q += prob * (r + gamma * V[s2])
-            V_new[s] = q
-        """
         
         Q = prob * (r + gamma * V[s_next])  # prob of all undefined state transitions are zero
         Q = np.sum(Q, axis=2)               # Sum across s'. Shape: (nS, nA).
         V_new = Q[s, policy[s]]             # Now that we have the matrix Q(s,a) just pick out the entries for a = pi(s)
-        
-        # print(V - V_new)
+
         if np.linalg.norm(V - V_new, ord=np.inf) < tol:
             break
         V = V_new.copy()
@@ -175,21 +162,10 @@ def policy_improvement(P, nS, nA, value_from_policy, policy, gamma=0.9):
     # Vectorize so it's easier to work with
     (prob, s_next, r) = as_tensor(P, nS, nA)  # Tensors: shape (nS, nA, nS)
 
-    """
-    for s in range(nS):
-        q_max = -np.inf
-        for a in range(nA):
-            for prob, s2, r, _ in P[s][a]:
-                q = prob * (r + gamma * V_pi[s2])
-                if q > q_max:
-                    q_max = q
-                    new_policy[s] = a
-    """
-    
     Q_pi = prob * (r + gamma * V_pi[s_next])  # prob of all undefined state transitions are zero
     Q_pi = np.sum(Q_pi, axis=2)               # Sum across s'. Shape: (nS, nA).
     new_policy = np.argmax(Q_pi, axis=1)      # Greedy policy: pi(s) = argmax_a[Q_pi]. For each state, pick the action that maximizes Q_pi
-    
+
     ############################
     return new_policy
 
@@ -342,3 +318,4 @@ if __name__ == "__main__":
     print(V_vi[0])
     # render_single(env, p_vi, 100)
     run_n(env, p_vi, 100, 100)
+    
