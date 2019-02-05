@@ -4,3 +4,4 @@
 *.out
 *.gz
 *.zip
+*assignment2/results/*
