@@ -482,13 +482,14 @@ class PG(object):
       eps_len = len(rewards)
       discount = np.logspace(0, eps_len, eps_len, base=self.config.gamma, endpoint=False) # Generate powers of gamma
       for t in range(eps_len):
-        """
-        G_t = np.multiply(discount[t:], rewards[:eps_len-t]) # Estimated values of each state; always discount starting with gamma power 0
+        G_t = np.multiply(rewards[t:], discount[:eps_len-t])
         G_t = np.sum(G_t)
         returns.append(G_t)
         """
+        # Sutton & Barto MC Policy-Gradient control episodic
         G_t = np.sum(rewards[t:])
         returns.append(discount[t] * G_t)
+        """
       #######################################################
       #########          END YOUR CODE.          ############
       all_returns.append(returns)
