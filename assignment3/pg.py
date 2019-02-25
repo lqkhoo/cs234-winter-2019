@@ -200,12 +200,12 @@ class PG(object):
         output_activation = None
       )
       # sigma
-      log_sigma = tf.get_variable(
-        'log_sigma', shape=(self.action_dim,), dtype=tf.float32,
+      log_std = tf.get_variable(
+        'log_std', shape=(self.action_dim,), dtype=tf.float32,
         initializer = tf.zeros_initializer(), # To initialize sigma=1, let log(sigma)=0 ==> e^(log(sigma))=1
         trainable = True
       )
-      sigma = tf.exp(log_sigma)
+      sigma = tf.exp(log_std)
       # Reparameterize / soft resampling: miu + sigma * N(0,1) rather than N(miu,sigma) to expose miu and sigma to backpropagation
       self.sampled_action = sigma * tf.random_normal((self.config.batch_size, self.action_dim)) + action_means
       distribution = tf.contrib.distributions.MultivariateNormalDiag(action_means, sigma)
