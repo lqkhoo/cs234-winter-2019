@@ -519,8 +519,8 @@ class PG(object):
     #######################################################
     #########   YOUR CODE HERE - 5-10 lines.   ############
     if self.config.use_baseline:
-      baseline = self.sess.run(self.baseline, feed_dict = {self.observation_placeholder: observations})
-      adv = adv - tf.squeeze(baseline)
+      self.baseline = self.sess.run(self.baseline, feed_dict = {self.observation_placeholder: observations})
+      adv = adv - tf.squeeze(self.baseline)
     if self.config.normalize_advantage:
       EPSILON = 1e-16
       adv = (adv - adv.mean()) / (adv.std() + EPSILON)
