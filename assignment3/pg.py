@@ -643,13 +643,13 @@ class PG(object):
     # initialize
     self.initialize()
     # record one game at the beginning
-    #if self.config.record:
-    # self.record()
+    if self.config.record:
+     self.record()
     # model
     self.train()
     # record one game at the end
-    #if self.config.record:
-    #  self.record()
+    if self.config.record:
+      self.record()
 
 if __name__ == '__main__':
     args = parser.parse_args()
