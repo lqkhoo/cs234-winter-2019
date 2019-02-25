@@ -204,7 +204,7 @@ class PG(object):
         )
         
         log_std = tf.get_variable(
-          'log_std', shape=[1, self.action_dim], dtype=tf.float32,
+          'log_std', shape=(self.action_dim,), dtype=tf.float32,
           initializer = tf.ones_initializer(),
           trainable = True
         )
