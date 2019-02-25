@@ -186,8 +186,8 @@ class PG(object):
         size = self.config.layer_size,
         output_activation = self.config.activation
       )
-      self.sampled_action = tf.squeeze(tf.multinomial(action_logits, 1), axis = 1) #valid use of sqeeuze?
-      self.logprob = -tf.nn.sparse_softmax_cross_entropy_with_logits(logits = action_logits, labels = self.action_placeholder)
+      self.sampled_action = tf.squeeze(tf.multinomial(action_logits, 1), axis=1)
+      self.logprob = -1 * tf.nn.sparse_softmax_cross_entropy_with_logits(logits=action_logits, labels=self.action_placeholder)
 
     else: # Continuous actions
       action_means = build_mlp(
@@ -519,8 +519,8 @@ class PG(object):
     #######################################################
     #########   YOUR CODE HERE - 5-10 lines.   ############
     if self.config.use_baseline:
-      self.baseline = self.sess.run(self.baseline, feed_dict = {self.observation_placeholder: observations})
-      adv = adv - tf.squeeze(self.baseline)
+      baseline = self.sess.run(self.baseline, feed_dict = {self.observation_placeholder: observations})
+      adv = returns - baseline.squeeze()
     if self.config.normalize_advantage:
       EPSILON = 1e-16
       adv = (adv - adv.mean()) / (adv.std() + EPSILON)
