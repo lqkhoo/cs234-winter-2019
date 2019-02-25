@@ -187,10 +187,10 @@ class PG(object):
         output_activation = self.config.activation
       )
       self.sampled_action = tf.squeeze(tf.multinomial(action_logits, 1), axis=1)
-      # self.sampled_action = tf.reshape(self.sampled_action, (-1,))
       self.logprob = -1 * tf.nn.sparse_softmax_cross_entropy_with_logits(logits=action_logits, labels=self.action_placeholder)
 
     else: # Continuous actions
+      # miu
       action_means = build_mlp(
         self.observation_placeholder,
         self.action_dim,
@@ -199,16 +199,16 @@ class PG(object):
         size=self.config.layer_size,
         output_activation = None
       )
-      
-      log_std = tf.get_variable(
-        'log_std', shape=(self.action_dim,), dtype=tf.float32,
-        initializer = tf.ones_initializer(),
+      # sigma
+      log_sigma = tf.get_variable(
+        'log_sigma', shape=(self.action_dim,), dtype=tf.float32,
+        initializer = tf.zeros_initializer(), # To initialize sigma=1, let log(sigma)=0 ==> e^(log(sigma))=1
         trainable = True
       )
+      sigma = tf.exp(log_sigma)
       # Reparameterize / soft resampling: miu + sigma * N(0,1) rather than N(miu,sigma) to expose miu and sigma to backpropagation
-      std = tf.exp(log_std)
-      self.sampled_action = std * tf.random_normal((self.config.batch_size, self.action_dim)) + action_means
-      distribution = tf.contrib.distributions.MultivariateNormalDiag(action_means, std)
+      self.sampled_action = sigma * tf.random_normal((self.config.batch_size, self.action_dim)) + action_means
+      distribution = tf.contrib.distributions.MultivariateNormalDiag(action_means, sigma)
       self.logprob = distribution.log_prob(self.action_placeholder)
       
     #######################################################
