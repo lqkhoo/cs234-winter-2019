@@ -202,6 +202,7 @@ class PG(object):
         size=self.config.layer_size,
         output_activation = None
       )
+      
       std = tf.get_variable(
         'std', shape=[1, self.action_dim], dtype=tf.float32,
         initializer = tf.zeros_initializer(),
@@ -213,6 +214,7 @@ class PG(object):
       distribution = tf.contrib.distributions.MultivariateNormalDiag(action_means, log_std)
       self.logprob = distribution.prob(self.action_placeholder)
       self.logprob = self.logprob
+      
     #######################################################
     #########          END YOUR CODE.          ############
 
@@ -478,7 +480,7 @@ class PG(object):
       #########   YOUR CODE HERE - 5-10 lines.   ############
       returns = [] # List of estimated values of each state along one trajectory
       eps_len = len(rewards)
-      discount = np.logspace(0, eps_len, eps_len, base=self.config.gamma, endpoint=False)[::-1] # Generate powers of gamma and reverse order
+      discount = np.logspace(0, eps_len, eps_len, base=self.config.gamma, endpoint=False) # Generate powers of gamma
       for t in range(eps_len):
         G_t = np.multiply(discount[t:], rewards[t:])
         G_t = np.sum(G_t)
