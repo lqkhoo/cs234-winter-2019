@@ -186,7 +186,8 @@ class PG(object):
         size = self.config.layer_size,
         output_activation = self.config.activation
       )
-      self.sampled_action = tf.squeeze(tf.multinomial(action_logits, 1), axis=1)
+      self.sampled_action = tf.squeeze(tf.multinomial(action_logits, 1))
+      # self.sampled_action = tf.reshape(self.sampled_action, (-1,))
       self.logprob = -1 * tf.nn.sparse_softmax_cross_entropy_with_logits(logits=action_logits, labels=self.action_placeholder)
 
     else: # Continuous actions
@@ -205,9 +206,9 @@ class PG(object):
         trainable = True
       )
       # Reparameterize / soft resampling: miu + sigma * N(0,1) rather than N(miu,sigma) to expose miu and sigma to backpropagation
-      self.sampled_action = tf.exp(log_std) * tf.random_normal((self.config.batch_size, self.action_dim)) + action_means
+      self.sampled_action = np.exp(log_std) * tf.random_normal((self.config.batch_size, self.action_dim)) + action_means
       distribution = tf.contrib.distributions.MultivariateNormalDiag(action_means, log_std)
-      self.logprob = distribution.log_prob(self.action_placeholder)
+      self.logprob = distribution.prob(self.action_placeholder)
       
     #######################################################
     #########          END YOUR CODE.          ############
@@ -271,7 +272,6 @@ class PG(object):
     """
     ######################################################
     #########   YOUR CODE HERE - 4-8 lines.   ############
-    #todoQ checked
     baseline = build_mlp(
       mlp_input   = self.observation_placeholder,
       output_size = 1,
@@ -522,7 +522,7 @@ class PG(object):
       baseline = self.sess.run(self.baseline, feed_dict = {self.observation_placeholder: observations})
       adv = returns - baseline.squeeze()
     if self.config.normalize_advantage:
-      EPSILON = 0 # 1e-16
+      EPSILON = 1e-16
       adv = (adv - adv.mean()) / (adv.std() + EPSILON)
     #######################################################
     #########          END YOUR CODE.          ############
