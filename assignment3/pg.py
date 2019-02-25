@@ -187,7 +187,10 @@ class PG(object):
         output_activation = self.config.activation
       )
       self.sampled_action = tf.squeeze(tf.multinomial(action_logits, 1), axis=1)
-      self.logprob = -1 * tf.nn.sparse_softmax_cross_entropy_with_logits(logits=action_logits, labels=self.action_placeholder)
+      self.logprob = -1 * tf.nn.sparse_softmax_cross_entropy_with_logits(
+        logits=action_logits,
+        labels=self.action_placeholder
+      )
 
     else: # Continuous actions
       # miu
@@ -479,9 +482,13 @@ class PG(object):
       eps_len = len(rewards)
       discount = np.logspace(0, eps_len, eps_len, base=self.config.gamma, endpoint=False) # Generate powers of gamma
       for t in range(eps_len):
-        G_t = np.multiply(discount[t:], rewards[t:])
+        """
+        G_t = np.multiply(discount[t:], rewards[:eps_len-t]) # Estimated values of each state; always discount starting with gamma power 0
         G_t = np.sum(G_t)
         returns.append(G_t)
+        """
+        G_t = np.sum(rewards[t:])
+        returns.append(discount[t] * G_t)
       #######################################################
       #########          END YOUR CODE.          ############
       all_returns.append(returns)
