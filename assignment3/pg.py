@@ -521,7 +521,7 @@ class PG(object):
     #########   YOUR CODE HERE - 5-10 lines.   ############
     if self.config.use_baseline:
       baseline = self.sess.run(self.baseline, feed_dict = {self.observation_placeholder: observations})
-      baseline = tf.squeeze(baseline, axis=1)
+      baseline = baseline.squeeze()
       adv = returns - baseline
     if self.config.normalize_advantage:
       EPSILON = 1e-16
@@ -635,13 +635,13 @@ class PG(object):
     # initialize
     self.initialize()
     # record one game at the beginning
-    if self.config.record:
-      self.record()
+    #if self.config.record:
+    # self.record()
     # model
     self.train()
     # record one game at the end
-    if self.config.record:
-      self.record()
+    #if self.config.record:
+    #  self.record()
 
 if __name__ == '__main__':
     args = parser.parse_args()
