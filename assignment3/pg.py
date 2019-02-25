@@ -186,7 +186,7 @@ class PG(object):
         size = self.config.layer_size,
         output_activation = self.config.activation
       )
-      self.sampled_action = tf.squeeze(tf.multinomial(action_logits, 1))
+      self.sampled_action = tf.squeeze(tf.multinomial(action_logits, 1), axis=1)
       # self.sampled_action = tf.reshape(self.sampled_action, (-1,))
       self.logprob = -1 * tf.nn.sparse_softmax_cross_entropy_with_logits(logits=action_logits, labels=self.action_placeholder)
 
