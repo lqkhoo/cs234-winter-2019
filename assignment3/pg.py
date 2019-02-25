@@ -210,7 +210,8 @@ class PG(object):
       )
       log_std = tf.log(tf.exp(std) + 1.0)
       log_std = tf.tile(log_std, [tf.shape(action_means)[0], 1])
-      self.sampled_action = tf.random_normal((1,), action_means, log_std)
+      # Reparameterize / soft resampling: miu + sigma * N(0,1) rather than N(miu,sigma) to expose miu and sigma to backpropagation
+      self.sampled_action = action_means + tf.exp(log_std) * tf.random_normal((self.config.batch_size, ,self.action_dim))
       distribution = tf.contrib.distributions.MultivariateNormalDiag(action_means, log_std)
       self.logprob = distribution.prob(self.action_placeholder)
       self.logprob = self.logprob
@@ -640,13 +641,13 @@ class PG(object):
     # initialize
     self.initialize()
     # record one game at the beginning
-    if self.config.record:
-        self.record()
+    #if self.config.record:
+    #    self.record()
     # model
     self.train()
     # record one game at the end
-    if self.config.record:
-      self.record()
+    #if self.config.record:
+    #  self.record()
 
 if __name__ == '__main__':
     args = parser.parse_args()
