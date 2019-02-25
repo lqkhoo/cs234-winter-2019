@@ -177,44 +177,41 @@ class PG(object):
     #######################################################
     #########   YOUR CODE HERE - 5-10 lines.   ############
 
-    if self.discrete:
-      action_logits = build_mlp(
-        self.observation_placeholder,
-        self.action_dim,
-        scope,
-        n_layers = self.config.n_layers,
-        size = self.config.layer_size,
-        output_activation = self.config.activation
-      )
-      self.sampled_action = tf.multinomial(action_logits, num_samples=1)
-      self.sampled_action = tf.reshape(self.sampled_action, [-1,]) # Flatten
-      self.logprob = -1 * tf.nn.sparse_softmax_cross_entropy_with_logits(
-        labels = self.action_placeholder,
-        logits = action_logits
-      )
+    with tf.variable_scope(scope):
+      if self.discrete:
+        action_logits = build_mlp(
+          self.observation_placeholder,
+          self.action_dim,
+          scope,
+          n_layers = self.config.n_layers,
+          size = self.config.layer_size,
+          output_activation = self.config.activation
+        )
+        self.sampled_action = tf.squeeze(tf.multinomial(action_logits, num_samples=1))
+        self.logprob = -1 * tf.nn.sparse_softmax_cross_entropy_with_logits(
+          labels = self.action_placeholder,
+          logits = action_logits
+        )
 
-    else: # Continuous actions
-      action_means = build_mlp(
-        self.observation_placeholder,
-        self.action_dim,
-        scope,
-        n_layers = self.config.n_layers,
-        size=self.config.layer_size,
-        output_activation = None
-      )
-      
-      std = tf.get_variable(
-        'std', shape=[1, self.action_dim], dtype=tf.float32,
-        initializer = tf.zeros_initializer(),
-        trainable = True
-      )
-      log_std = tf.log(tf.exp(std) + 1.0)
-      log_std = tf.tile(log_std, [tf.shape(action_means)[0], 1])
-      # Reparameterize / soft resampling: miu + sigma * N(0,1) rather than N(miu,sigma) to expose miu and sigma to backpropagation
-      self.sampled_action = action_means + tf.exp(log_std) * tf.random_normal((self.config.batch_size, self.action_dim))
-      distribution = tf.contrib.distributions.MultivariateNormalDiag(action_means, log_std)
-      self.logprob = distribution.prob(self.action_placeholder)
-      self.logprob = self.logprob
+      else: # Continuous actions
+        action_means = build_mlp(
+          self.observation_placeholder,
+          self.action_dim,
+          scope,
+          n_layers = self.config.n_layers,
+          size=self.config.layer_size,
+          output_activation = None
+        )
+        
+        log_std = tf.get_variable(
+          'log_std', shape=[1, self.action_dim], dtype=tf.float32,
+          initializer = tf.ones_initializer(),
+          trainable = True
+        )
+        # Reparameterize / soft resampling: miu + sigma * N(0,1) rather than N(miu,sigma) to expose miu and sigma to backpropagation
+        self.sampled_action = action_means + tf.math.exp(log_std) * tf.random_normal((self.config.batch_size, self.action_dim))
+        distribution = tf.contrib.distributions.MultivariateNormalDiag(action_means, log_std)
+        self.logprob = distribution.log_prob(self.action_placeholder)
       
     #######################################################
     #########          END YOUR CODE.          ############
@@ -278,7 +275,8 @@ class PG(object):
     """
     ######################################################
     #########   YOUR CODE HERE - 4-8 lines.   ############
-    self.baseline = build_mlp(
+    #todoQ checked
+    baseline = build_mlp(
       mlp_input   = self.observation_placeholder,
       output_size = 1,
       scope       = scope,
@@ -286,8 +284,9 @@ class PG(object):
       size        = config.layer_size,
       output_activation = None
     )
+    self.baseline = tf.squeeze(baseline)
     self.baseline_target_placeholder = tf.placeholder(tf.float32, shape=(None,))
-    baseline_loss = tf.losses.mean_squared_error(tf.squeeze(self.baseline), self.baseline_target_placeholder)
+    baseline_loss = tf.losses.mean_squared_error(self.baseline, self.baseline_target_placeholder)
     optimizer = tf.train.AdamOptimizer(self.lr)
     self.update_baseline_op = optimizer.minimize(baseline_loss)
     #######################################################
@@ -524,11 +523,8 @@ class PG(object):
     #######################################################
     #########   YOUR CODE HERE - 5-10 lines.   ############
     if self.config.use_baseline:
-      baseline = self.sess.run(
-        self.baseline,
-        feed_dict = {self.observation_placeholder: observations}
-      )
-      adv = adv - baseline.squeeze()
+      baseline = self.sess.run(self.baseline, feed_dict = {self.observation_placeholder: observations})
+      adv = adv - tf.squeeze(baseline)
     if self.config.normalize_advantage:
       EPSILON = 1e-16
       adv = (adv - adv.mean()) / (adv.std() + EPSILON)
