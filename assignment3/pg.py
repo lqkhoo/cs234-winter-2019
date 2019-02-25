@@ -206,9 +206,10 @@ class PG(object):
         trainable = True
       )
       # Reparameterize / soft resampling: miu + sigma * N(0,1) rather than N(miu,sigma) to expose miu and sigma to backpropagation
-      self.sampled_action = tf.exp(log_std) * tf.random_normal((self.config.batch_size, self.action_dim)) + action_means
-      distribution = tf.contrib.distributions.MultivariateNormalDiag(action_means, log_std)
-      self.logprob = distribution.prob(self.action_placeholder)
+      std = tf.exp(log_std)
+      self.sampled_action = std * tf.random_normal((self.config.batch_size, self.action_dim)) + action_means
+      distribution = tf.contrib.distributions.MultivariateNormalDiag(action_means, std)
+      self.logprob = distribution.log_prob(self.action_placeholder)
       
     #######################################################
     #########          END YOUR CODE.          ############
