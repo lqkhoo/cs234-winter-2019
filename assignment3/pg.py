@@ -522,7 +522,7 @@ class PG(object):
       baseline = self.sess.run(self.baseline, feed_dict = {self.observation_placeholder: observations})
       adv = returns - baseline.squeeze()
     if self.config.normalize_advantage:
-      EPSILON = 1e-16
+      EPSILON = 0 # 1e-16
       adv = (adv - adv.mean()) / (adv.std() + EPSILON)
     #######################################################
     #########          END YOUR CODE.          ############
