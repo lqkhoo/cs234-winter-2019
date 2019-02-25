@@ -177,41 +177,33 @@ class PG(object):
     #######################################################
     #########   YOUR CODE HERE - 5-10 lines.   ############
 
-    with tf.variable_scope(scope):
-      if self.discrete:
-        action_logits = build_mlp(
-          self.observation_placeholder,
-          self.action_dim,
-          scope,
-          n_layers = self.config.n_layers,
-          size = self.config.layer_size,
-          output_activation = self.config.activation
-        )
-        self.sampled_action = tf.squeeze(tf.multinomial(action_logits, num_samples=1))
-        self.logprob = -1 * tf.nn.sparse_softmax_cross_entropy_with_logits(
-          labels = self.action_placeholder,
-          logits = action_logits
-        )
+    if self.discrete:
+      action_logits = build_mlp(
+        self.observation_placeholder,
+        self.action_dim,
+        scope,
+        n_layers = self.config.n_layers,
+        size = self.config.layer_size,
+        output_activation = self.config.activation
+      )
+    self.sampled_action = tf.squeeze(tf.multinomial(action_logits, 1), axis = 1) #valid use of sqeeuze?
+    self.logprob = -tf.nn.sparse_softmax_cross_entropy_with_logits(logits = action_logits, labels = self.action_placeholder)
 
-      else: # Continuous actions
-        action_means = build_mlp(
-          self.observation_placeholder,
-          self.action_dim,
-          scope,
-          n_layers = self.config.n_layers,
-          size=self.config.layer_size,
-          output_activation = None
-        )
-        
-        log_std = tf.get_variable(
-          'log_std', shape=(self.action_dim,), dtype=tf.float32,
-          initializer = tf.ones_initializer(),
-          trainable = True
-        )
-        # Reparameterize / soft resampling: miu + sigma * N(0,1) rather than N(miu,sigma) to expose miu and sigma to backpropagation
-        self.sampled_action = action_means + tf.math.exp(log_std) * tf.random_normal((self.config.batch_size, self.action_dim))
-        distribution = tf.contrib.distributions.MultivariateNormalDiag(action_means, log_std)
-        self.logprob = distribution.log_prob(self.action_placeholder)
+    else: # Continuous actions
+      action_means = build_mlp(
+        self.observation_placeholder,
+        self.action_dim,
+        scope,
+        n_layers = self.config.n_layers,
+        size=self.config.layer_size,
+        output_activation = None
+      )
+      
+      log_std = tf.get_variable(name = scope + "std_log" ,dtype = tf.float32, shape = [self.action_dim]) #Valid initialization? Why use log_std instead of std directly (scale invariance)?
+      
+      self.sampled_action = tf.exp(log_std)*tf.random_normal(shape = [self.config.batch_size, self.action_dim]) + action_means
+      a_mvn = tf.contrib.distributions.MultivariateNormalDiag(loc = action_means, scale_diag = tf.exp(log_std))
+      self.logprob = a_mvn.log_prob(self.action_placeholder)
       
     #######################################################
     #########          END YOUR CODE.          ############
