@@ -22,6 +22,8 @@
 \usepackage{bm}
 \usepackage[most]{tcolorbox}
 \usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\usepackage{float}
 
 
 % guillaume edits
@@ -145,25 +147,26 @@ Winter 2019}}}
 
 \section{Policy Gradient Methods (50 pts + 15 pts writeup)}
 
+\subsection{Coding Questions (50 pts)}
 \begin{itemize}
-\item(code)
+\item \url{https://github.com/lqkhoo/cs234-winter-2019/blob/master/assignment3/pg.py}
 \end{itemize} 
 
 \subsection{Writeup Questions (15 pts)}
 \begin{enumerate}
 \item[(a) (4 pts)] (CartPole-v0)
-\begin{figure}[h]
+\begin{figure}[H]
 	\centering
 	\begin{subfigure}[b]{.4\textwidth}
 		\centering
 		\includegraphics[width=0.9\linewidth]{cartpole-baseline-avgreward.png}
-		\caption{CartPole-v0 with baseline. Average reward over 200 runs.}
+		\caption{CartPole-v0 with baseline. Average reward over 100 iterations.}
 	\end{subfigure}
 	\qquad
 	\begin{subfigure}[b]{.4\textwidth}
 		\centering
 		\includegraphics[width=0.9\linewidth]{cartpole-nobaseline-avgreward.png}
-		\caption{CartPole-v0 without baseline. Average reward over 200 runs.}
+		\caption{CartPole-v0 without baseline. Average reward over 100 iterations.}
 	\end{subfigure}
 \end{figure}
 
@@ -178,56 +181,49 @@ We have derived the Monte-Carlo estimate of the gradient of $J(\theta)$ for poli
 
 Where $b$ is some constant scalar bias of the reward function. Mathematically, the baseline is just another bias, and we already know that this gradient $\nabla_{\theta}J(\theta)$ is indifferent to the bias \textit{in expectation}. However, the actual size and value of the bias still influences convergence (consider a bias close to +/- infinity) due to how the probability mass of the policy is shifted when we perform the gradient update, as well as the variance of the quantity $r(\tau)-b$. (Berkeley CS294, lecture 4)
 
-Here, the baseline we are taking is the state value function $V(s_t)$, which represents the average of returns of all actions from that state. Mathematically, $V(s_t)$ already summarizes all future returns, and the advantage $A(s_t, a_t) = r(s_t, a_t) - V(s_t)$ becomes independent of returns of all future time steps \textit{in the current trajectory}. Mathematically, this lowers the variance of our estimated action values. Semantically, we are shifting the probability mass of the policy to make actions which are \textit{better than average} (our chosen baseline) to be more likely.
+Here, the baseline we are taking is the state value function $V(s_t)$, which represents the average of returns of all actions from that state. Suppose we have a good estimate of $V(s_t)$. Mathematically, $V(s_t)$ already summarizes all future returns, and the advantage $A(s_t, a_t) = r(s_t, a_t) - V(s_t)$ becomes insulated from the variance of returns of all future time steps \textit{in the current trajectory}. This lowers the variance of our estimated action values. Semantically, we are shifting the probability mass of the policy to make actions which are \textit{better than average} (our chosen baseline) to be more likely.
 
-Empirically, we can see from the plots above that using the baseline gives "better" convergence. Our observation here is that the plateau is more stable.
+Empirically, we can see from the plots above that using the baseline tends to give "better" convergence, although this is far from being guaranteed. Our observation here is that the plateau is more stable. The standard deviation of rewards (not shown here) tends to be lower as well.
 
 \item[(b) (4 pts)](InvertedPendulum-v1)
-Test your implementation on the InvertedPendulum-v1 environment by running
-\begin{tcolorbox}
-\begin{verbatim}
-python pg.py --env_name pendulum --baseline
-\end{verbatim}
-\end{tcolorbox}
 
-With the given configuration file \texttt{config.py}, the average reward should reach $1000$ within $100$ iterations. \emph{NOTE: Again, we only require that you reach 1000 sometime during training.} 
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}[b]{.4\textwidth}
+		\centering
+		\includegraphics[width=0.9\linewidth]{pendulum-baseline-avgreward.png}
+		\caption{Pendulum-v1 with baseline. Average reward over 100 iterations.}
+	\end{subfigure}
+	\qquad
+	\begin{subfigure}[b]{.4\textwidth}
+		\centering
+		\includegraphics[width=0.9\linewidth]{pendulum-nobaseline-avgreward.png}
+		\caption{Pendulum-v1 without baseline. Average reward over 100 iterations.}
+	\end{subfigure}
+\end{figure}
 
-Include the tensorboard plot for the average reward in your writeup.
-
-Now, test your implementation on the InvertedPendulum-v1 environment without baseline by running
-\begin{tcolorbox}
-\begin{verbatim}
-python pg.py --env_name pendulum --no-baseline
-\end{verbatim}
-\end{tcolorbox}
-Include the tensorboard plot for the average reward. Do you notice any difference? Explain.
+In this case, we notice that running with baseline tends to have faster convergence, but here, it doesn't seem to help very much with the instability of the algorithm. This instability is due to the high variance of REINFORCE (Monte-Carlo "vanilla" policy gradient), relative to comparable methods such as natural policy gradient and TRPO.
 
 \item[(c) (7 pts)](HalfCheetah-v1)
-Test your implementation on the HalfCheetah-v1 environment with $\gamma = 0.9$ by running
-\begin{tcolorbox}
-\begin{verbatim}
-python pg.py --env_name cheetah --baseline
-\end{verbatim}
-\end{tcolorbox}
 
-With the given configuration file \texttt{config.py}, the average reward should reach $200$ within $100$ iterations. \emph{NOTE: There is some variance in training. You can run multiple times and report the best results or average. We have provided our results (average reward) averaged over 6 different random seed in figure \ref{fig:half}} Include the tensorboard plot for the average reward in your writeup.
-
-Now, test your implementation on the HalfCheetah-v1 environment without baseline by running
-\begin{tcolorbox}
-\begin{verbatim}
-python pg.py --env_name cheetah --no-baseline
-\end{verbatim}
-\end{tcolorbox}
-Include the tensorboard plot for the average reward. Do you notice any difference? Explain.
-\end{enumerate}
-% We have provided our results for HalfCheetah-v1's average reward for your reference. Note that this result is averaged over 6 different random seeds.
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.25\linewidth]{halfcheetah.png}
-    \caption{Half Cheetah, averaged over 6 runs}
-    \label{fig:half}
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}[b]{.4\textwidth}
+		\centering
+		\includegraphics[width=0.9\linewidth]{cheetah-baseline-avgreward.png}
+		\caption{HalfCheetah-v1 with baseline. Average reward over 100 iterations.}
+	\end{subfigure}
+	\qquad
+	\begin{subfigure}[b]{.4\textwidth}
+		\centering
+		\includegraphics[width=0.9\linewidth]{cheetah-nobaseline-avgreward.png}
+		\caption{HalfCheetah-v1 without baseline. Average reward over 100 iterations.}
+	\end{subfigure}
 \end{figure}
- 
+
+In this particular run, the baseline didn't seem to help, although on average it's supposed to have the same properties as explained in (a) by reducing the variance of the gradient.
+
+\end{enumerate}
  \newpage
 
 \section{Best Arm Identification in Multiarmed Bandit (35pts)}
@@ -244,6 +240,7 @@ we propose this simple strategy: allocate an identical number of samples $n_1 = 
 Intuitively, as $n_{des}$ increases the empirical payout $\widehat r_a$ converges to its expected value $\overline r_a$ for every action $a$, and so choosing the arm with the highest empirical payout $\widehat r_a$ corresponds to approximately choosing the arm with the highest expected payout $\overline r_a$.
 
 \begin{enumerate}
+
 \item[(a) (15 pts)] We start by defining a \emph{good event}. Under this \emph{good event}, the empirical payout of each arm is not too far from its expected value. Starting from Hoeffding inequality with $n_{des}$ samples allocated to every action show that:
 
 \begin{align*}
@@ -263,6 +260,7 @@ Notice that $a^\dagger$ is a random variable.
 	\Pr \Bigg(\overline r_{a^\dagger} \geq  \overline r_{a^\star} - \epsilon \Bigg) \geq 1-\delta'.
 \end{equation*}
 How many samples are needed to ensure this? Express your result as a function of the number of actions $A$, the required precision $\epsilon$ and the failure probability $\delta'$.
+
 \end{enumerate}
 
 \printbibliography
