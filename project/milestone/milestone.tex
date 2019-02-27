@@ -33,15 +33,16 @@
 \usepackage{amsmath, amsthm, amssymb}
 
 
-
 \newcommand{\bvec}[1]{\boldsymbol{#1}}
+\newcommand{\dbvec}[1]{\dot{\boldsymbol{#1}}}
+\newcommand{\ddbvec}[1]{\ddot{\boldsymbol{#1}}}
 
 
 \begin{document}
 
 \twocolumn[
 \icmltitle{Project Milestone for CS234 (Winter 2019) \\
-			Generalized Locomotion Controllers}
+			Task-Generalizable Locomotion Controllers}
 
 % in order of appearance and this is the preferred way.
 \icmlsetsymbol{equal}{*}
@@ -90,11 +91,11 @@ In short, there are several practical reasons behind this change. Also, after de
 \subsection{Locomotion policies under pure RL}
 For locomotion tasks trained entirely using RL techniques, we tend to notice several things that could be improved. In particular, training the policy can be highly sample-inefficient due to lack of domain knowledge. There is also a certain unnaturalness or inefficiency of gait due to loose constraints (e.g. flailing arms in a running humanoid), jerkiness of motion due to discontinuous policy or feedback, in continuous state and action spaces.
 
-In the scope of rigid bodies interacting with the environment, locomotion can only happen via surface-to-surface contacts between the agent and the environment. These are temporary degrees of constraints (DOCs) depending on the nature of the contact (e.g. sliding, rolling, fixed), which are otherwise identical to joint articulations between rigid bodies. Although MuJoCo provides a highly simplified model of Newtonian fluids, for the sake of brevity let's set that aside for now.
+In the scope of rigid bodies interacting with the environment, locomotion can only happen via surface-to-surface contacts between the agent and the environment. These are temporary degrees of constraints (DOCs) depending on the nature of the contact (e.g. sliding, rolling, fixed), which are otherwise identical to joint articulations between rigid bodies. Although MuJoCo provides a highly simplified model of Newtonian fluids, for the sake of brevity, let's set aside fluid interactions for now.
 
 The fact is we are dealing with a physical system, and for performance reasons we should really be treating it as one. For instance, in \cite{heess2017emergence} [\href{https://www.youtube.com/watch?v=hx_bgoTF7bs}{video}], locomotion behaviours are synthesized from simple reward functions in humanoid models.
 
-The result is certainly impressive in at least two ways: The RL algorithm they used needed to know next to nothing about what it is actually controlling to generate a usable policy, and the learned policy "generalizes" to different tasks (the terrain and obstacles). However, reinforcement learning is most relevant when we \textit{really} cannot know the dynamics of a system, or the solution is intractable for a control system, e.g. in fluid dynamics \cite{mit6832}. For rigid-body systems, we can certainly do a much better job in designing a locomotion controller, and we can start by including physical information into our model. This brings us to control theory.
+The result is certainly impressive in at least two ways: The RL algorithm they used needed to know next to nothing about what it is actually controlling to generate a usable policy, and the learned policy "generalizes" to different tasks (the terrain and obstacles). However, reinforcement learning is most relevant when we \textit{really} cannot know the dynamics of a system, or the solution is intractable for a control system, e.g. in complex fluid dynamics \cite{mit6832}. For articulated rigid-body systems interacting with a solid environment, we can certainly do a much better job in designing a locomotion controller, and we can start by including physical information into our model. This brings us to control theory.
 
 \subsection{Control theory}
 The field of control theory is specifically developed to deal with dynamical systems in continuous state spaces. A simple example of a linear feedback control system is the PID (proportional-integral-derivative) controller, whose control function (the response) is defined as:
@@ -106,10 +107,10 @@ where $w$ terms are tunable scalar parameters, and $\bvec{x}$ is the state vecto
 
 This could be understood as a controller whose response is linear with respect to the actual value of a variable, its instantaneous time delta, as well as moving average (whose job is to correct for a so-called steady-state error). It is notably not optimal for nonlinear systems.
 
-More generally, in optimal control theory, in the special case where system dynamics could be described by a set of \textit{linear} differential equations, and where the cost is described by a \textit{quadratic} function, we have a so-called linear-quadratic (LQ) problem, and the optimal control solution is called the linear-quadratic regulator (LQR), which can be found by solving the system's Ricatti equation. In the related LQG (linear-quadratic-Gaussian) regime where both our readings of $\bvec{x}(t)$ and outputs $\bvec{y}(t)$ are corrupted by additive white Gaussian noise, the optimal solution is comprised of the gains from a Kalman filter on $\bvec{x}$ applied on top of the associated LQR.
+More generally, in optimal control theory, in the special case where system dynamics could be described by a set of \textit{linear} differential equations, and where the cost is described by a \textit{quadratic} function, we have a so-called linear-quadratic (LQ) problem, and the optimal control solution is called the linear-quadratic regulator (LQR), which can be found by solving the system's Ricatti equation. In the related linear-quadratic-Gaussian (LQG) regime where both our readings of $\bvec{x}(t)$ and outputs $\bvec{y}(t)$ are corrupted by additive white Gaussian noise, the optimal solution is comprised of the gains from a Kalman filter on $\bvec{x}$ applied on top of the associated LQR.
 
 \subsection{Other control methods}
-There are other control methods for dynamic processes, such as model predictive control (MPC). These generally require a model of the specific process we are concerned about optimizing, and are thus not generalizable to different tasks. We shall not describe them here.
+There are other control methods for dynamic processes, such as model predictive control (MPC). These generally require a model of the specific process we are concerned about optimizing, and are thus not (easily?) generalizable to different tasks. We shall not describe them here, in the interest of time and scope.
 
 \section{Introduction}
 The method which we are going to be exploring shall attempt to combine the best of both worlds: the efficient trajectory search from trajectory optimization methods (via LQR or otherwise), and policy tuning via reinforcement learning, which provides the generality over very different trajectories. Emphasis: this is not an original idea. In fact, this proposal is primarily inspired by the following two papers:
@@ -119,18 +120,18 @@ The method which we are going to be exploring shall attempt to combine the best 
 	\item Discovery of Complex Behaviors through Contact-Invariant Optimization \cite{mordatch2012discovery} [\href{https://www.youtube.com/watch?v=mhr_jtQrhVA}{video}]
 \end{itemize}
 
-Since it is not a requirement of the project to develop something novel, we are treating this as an opportunity to implement a solution which is known to work, as well as taking the opportunity to dig deeper into trajectory optimization and control theory, which we (I) am practically scrambling to understand from scratch, in order to make sense of the literature as well as to push the project forward.
+Since it is not a requirement of the project to develop something novel, we are treating this as an opportunity to implement a solution which is known to work, as well as taking the opportunity to dig deeper into trajectory optimization and control theory, which we (I) am practically scrambling to understand from scratch.
 
 Compared to the original Stratego proposal, this line of inquiry allows time to become more familiar with MuJoCo itself, and provides a stepping stone for further research in locomotion. For instance, the authors have applied a similar method in \cite{mordatch2012contact} to achieve high-dexterity control of a robotic hand.
 
 We shall use the remaining space in the 3-page limit to describe the most important ideas of the approach, before going into what we expect to be able to do in the coming month, which is the limiting factor for scoping what we are able to do.
 
-Just to clarify that this is a project about reinforcement learning, the method the authors used to produce the final policy is via block-alternating optimization, where they optimize, in turn, the trajectory (by penalizing deviations from the policy), and then the policy (by minimizing the loss w.r.t a set of trajectories, for different tasks). In this sense, we do not initially know what the solution is - trajectory optimization solves each task individually for us - and then the policy is trained to imitate the trajectories generated for \textit{all} tasks at once in order to generalize to unseen states and (and hopefully tasks).
+Just to clarify that this is a project about reinforcement learning, the method the authors used to produce the final policy is via block-alternating optimization, where they optimize, in turn, the trajectory (by penalizing deviations from the policy), and then the policy (by minimizing the loss w.r.t a set of trajectories, for different tasks). In this sense, we do not initially know what the solution policy is. Trajectory optimization solves each task individually for us, and then the policy is trained to imitate the trajectories generated for \textit{all} tasks at once in order to generalize to unseen states (and hopefully, similar tasks).
 
 \subsection{Additive noise}
 In \cite{mordatch2015interactive}, citing other prior work, states that injecting noise during training makes the resulting policy more robust, and noise is added to prevent divergent policies during execution. They add independent Gaussian noise $\epsilon \sim \mathcal{N}(\bvec{0}, \bvec{\sigma}^2_{\epsilon}\bvec{I})$ to all sensory inputs, and showed that if the noise is small enough, the optimal action at nearby noisy states is given by the first-order Taylor approximation $\bvec{a}(\bvec{s}+\epsilon) \approx \bvec{a}(s) + \frac{d\bvec{a}}{d\bvec{s}}\epsilon$.
 
-In addition, they added Gaussian noise $\gamma \sim \mathcal{N}(\bvec{0}, \bvec{\sigma}^2_{\gamma}\bvec{I})$ to the outputs of their hidden layers, as a network regularizer, in order to make the controller less sensitive to specific values of the hidden units.
+Similarly, they added Gaussian noise $\gamma \sim \mathcal{N}(\bvec{0}, \bvec{\sigma}^2_{\gamma}\bvec{I})$ to the outputs of their hidden layers, as a network regularizer, in order to make the controller less sensitive to specific values of the hidden units.
 
 The authors emphasized (and showed) the importance of this noise in the robustness of their resulting policies.
 
@@ -141,14 +142,34 @@ This is the main idea behind the 2012 paper. CIO optimizes over a composite obje
 L(\bvec{s}) &= L_{CI}(\bvec{s}) + L_{Physics}(\bvec{s}) + L_{Task}(\bvec{s}) + L_{Hint}(\bvec{s})
 \end{align*}
 
-There are variants of it to account for non-planar contacts \cite{mordatch2012contact}, but the most important feature is its decomposability. CIO optimizes over a the contact-invariant (CI) loss function, which is linear in four component losses, and by disabling or enabling different components at different times, it can speed up the process of trajectory search. As defined in \cite{mordatch2012contact}, CI loss has the following definition:
+For brevity, we shall not reproduce all the equations for individual losses here; please refer to the original paper for details. The important things are: all component losses are defined as $L_2$ losses, and all constraints, including contact points, are defined as soft, continuous functions, to enable numerical optimization. $L_{Hint}$ is an optional initialization heuristic, and it's defined as the zero-moment point (ZMP) stability criterion, to keep the ZMP in the convex hull of support regions. $L_{Task}$ encompasses losses over final poses, as well as energy efficiency and acceleration. $L_{Physics}$ enforces soft joint constraints and mesh collisions.
 
-todo
+In order to specify the contact-invariant loss $L_{CI}$, the authors specified end-effector surfaces, which are the only surfaces allowed to exert forces on the environment. Each end-effector has an associated scalar variable $c_i$ that represents the contact force which the effector is exerting on the contact surface (e.g. in order to walk, push, grab etc.).
+
+\begin{align*}
+	L_{CI}(\bvec{s}) = \sum_{t}^{T}c_{i,t}(\bvec{s}) (||\bvec{e}_{i,t}(\bvec{s})||^2 + ||\dbvec{e}_{i,t}(\bvec{s})||^2 )
+\end{align*}
+
+where $\bvec{e}$ is a 4D $(x,y,z,\theta)$ contact-violation vector, and $\dbvec{e}$ the slippage penalty term.
+
+There are variants of the loss function, especially in the $L_{CI}$ term to account for non-planar contacts \cite{mordatch2012contact}, but the most important feature of this loss is its decomposability. By disabling or enabling different components at different times, it can speed up the process of trajectory search. In the oral session, the authors start only with task and hint losses (thus ignoring all physical constraints and collisions) to generate an overly-optimistic solution, and then gradually re-enable other loss terms to converge onto a plausible solution trajectory.
 
 \section{Approach}
 
-todo
+We have just summarized a large body of work done over many years; it is simply not feasible to reproduce their best results within the next 20 days or so. A more realistic goal is to implement the methodology on simpler models, e.g. by restricting movement to a 2-d plane like HalfCheetah, and simplifying the loss functions where necessary. We could also view the simplification as an ablation study. For example, the original authors penalize contact slippage within $L_{CI}$, which did not allow for sliding movements, as they explained in \cite{mordatch2012contact}. It would be highly interesting to see if how the agent's learned policy is changed if it was trained without this penalty.
 
+We expect to spend much time working around MuJoCo, extracting variables such as surface normals and reaction forces. In fact, before this, entire days were spent just configuring the environment for everything (MuJoCo, mujoco\_py, the renderer) etc. to work properly.
+
+Due to the novelty of the material, it is difficult to gauge how far we could take this in the time limit. Therefore, we shall define our goals as a priority list:
+\begin{enumerate}
+	\item Implement the additive noise model and replicate their rolling-ball demonstrator.
+	\item Implement the full method on a planar walker model trained to walk a fixed distance via trajectory optimization. The policy should be able to generalize the agent to be able to walk any distance. We would consider this to be the minimum level of satisfaction for this project.
+	\item Implement the full method on a similarly plane-constrained model, but with terrain-climbing ability as demonstrated in \cite{mordatch2012discovery}.
+	\item Implement the full method on an unconstrained model. We consider this as unlikely to be achieved before the deadline.
+	\item Bonus: Perform the ablation study for removing the slip penalty term from $L_{CI}$, or for removing the original simplification of treating the agent 's mass distribution as a point mass over the COG.
+\end{enumerate}
+
+\newpage
 
 \bibliography{milestone}
 \bibliographystyle{icml2018}
