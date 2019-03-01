@@ -241,25 +241,69 @@ Intuitively, as $n_{des}$ increases the empirical payout $\widehat r_a$ converge
 
 \begin{enumerate}
 
-\item[(a) (15 pts)] We start by defining a \emph{good event}. Under this \emph{good event}, the empirical payout of each arm is not too far from its expected value. Starting from Hoeffding inequality with $n_{des}$ samples allocated to every action show that:
+\item[(a) (15 pts)]
+%Notation: 
+%\begin{align*}
+%\overline{X} &= \mathbb{E}[X] = \int\limits_{x\in X}^{}f_{X}(x)dx \quad; %\quad \widehat{X}_n = \frac{1}{n}\sum_{i=1}^{n}x_i \\
+%\end{align*}
 
+Given: $r_a \in [0,1] \forall a$, and we sample every action $a \in \mathcal A$ exactly $n = n_{des}$ times. Just so that it's clear that $r$ is a random variable, let $R_a = r_a$. We assume that $R$ is i.i.d.\\
+
+To show:
 \begin{align*}
-\Pr\Bigg(\exists a \in \mathcal A \quad s.t. \quad |\widehat r_a - \overline r_a | > \sqrt{\frac{\log(2/\delta)}{2n_{des}}}	\Bigg) < A\delta.
+P\Bigg(\exists a \in \mathcal A \quad s.t. \quad |\widehat R_a - \overline R_a | > \sqrt{\frac{\log(2/\delta)}{2n}}\Bigg) < |\mathcal A|\delta.
 \end{align*}
 
-In other words, the \emph{bad event} is that at least one arm has an empirical mean that differs significantly from its expected value and this has probability at most $A\delta$.
+We shall prove this directly through the union bound. The fact that this is a bandit problem doesn't matter for our proof, so for notational clarity, let $X_a = |\widehat R_a - \overline R_a|$, and let $\gamma = \sqrt{\frac{\log(2/\delta)}{2n}}$, which means we aim to show that $P(\exists a \in \mathcal A \quad s.t. \quad X_a > \gamma) < |\mathcal A|\delta$.
 
-\item[(b) (20 pts)] After pulling each arm (action) $n_{des}$ times our algorithm returns the arm with the highest empirical payout:
-\begin{equation*}
-a^\dagger = argmax_{a} \widehat r_a	
-\end{equation*}
-Notice that $a^\dagger$ is a random variable.
- Define ${a^\star}$ as the optimal arm (that yields the highest average reward ${a^\star} = argmax_a \overline r_{a}$). Suppose that we want our algorithm to return at least an $\epsilon$ optimal arm with probability $1-\delta'$, as follows:
+Saying that the probability that there exists a condition $a$ where an event $W$ is true, is the same as saying that the probability that at least one of the events $W_{a'}$ is true under some condition $a'$, among all possible conditions $a \in A$. Note that this depends on the fact that $\mathcal A$ is a countable set (which is assumed by the question since $a$ could be enumerated):
+\begin{align*}
+P(\exists a \in \mathcal A \quad s.t. \quad X_a > \gamma) = P\bigg((X_{a_1}>\gamma) \bigcup (X_{a_2}>\gamma) \bigcup ... \bigcup (X_{a_{|\mathcal A|}}>\gamma)\bigg)= P\bigg( \bigcup\limits_{a \in \mathcal A}^{}(X_a > \gamma) \bigg)
+\end{align*}
+And thus,
+\begin{align*}
+P(X_a > \gamma) &< \delta \quad\quad \text{Given, by Hoeffding's inequality} \\
+\underbrace{P\bigg( \bigcup\limits_{a \in \mathcal A}^{}(X_a > \gamma) \bigg) \leq \sum_{a \in \mathcal A}^{}P(X_a > \gamma)}_{\text{Union bound}} &< \sum_{a \in \mathcal A}^{}\delta = |\mathcal A|\delta \quad\quad QED
+\end{align*} \\
 
-\begin{equation*}
-	\Pr \Bigg(\overline r_{a^\dagger} \geq  \overline r_{a^\star} - \epsilon \Bigg) \geq 1-\delta'.
-\end{equation*}
-How many samples are needed to ensure this? Express your result as a function of the number of actions $A$, the required precision $\epsilon$ and the failure probability $\delta'$.
+Alternatively, we could also prove this via the set complement, and by using Bernoulli's inequality, under the same assumptions:
+\begin{align*}
+P(\exists a \in \mathcal A \quad s.t. \quad X_a > \gamma) = 1 - P\bigg((X_{a_1}\leq\gamma) \bigcap (X_{a_2}\leq\gamma) \bigcap ... \bigcap (X_{a_{|\mathcal A|}}\leq\gamma)\bigg)= 1 - P\bigg( \bigcap\limits_{a \in \mathcal A}^{}(X_a \leq \gamma) \bigg)
+\end{align*}
+And since:
+\begin{align*}
+P(X_a>\gamma) &< \delta \\
+P(X_a\leq\gamma) = 1 - P(X_a > \gamma) &> 1-\delta \\
+\end{align*}
+Therefore:
+\begin{align*}
+P\bigg( \bigcap\limits_{a \in \mathcal A}^{}(X_a \leq \gamma) \bigg) &= \prod_{a \in \mathcal A}^{}P(X_a \leq \gamma) > \underbrace{(1-\delta)^{|\mathcal A|} \geq 1 - |\mathcal A|\delta}_{\text{Bernoulli's inequality: $(1+x)^r \geq 1+rx$}} \\
+1 - P\bigg( \bigcap\limits_{a \in \mathcal A}^{}(X_a \leq \gamma) \bigg) &< |\mathcal A|\delta \quad QED
+\end{align*}
+
+
+\item[(b) (20 pts)] In order to claim any sort of relationship between the true means $\bar{R_a}$ of any two arms, because the true means are not directly observable, we must work in the case where the empirical means $\hat{R_a}$ accurately estimate the true means. This means it can only happen when $(|\bar{R_a} - \hat{R_a}| \leq \gamma) \forall a$.
+
+Working from part (a):
+
+\begin{align*}
+P\bigg(\bigcup\limits_{a \in A}^{} (X_a > \gamma)\bigg) &< |A|\delta \\
+P\bigg(\bigcap\limits_{a \in A}^{} (X_a \leq \gamma)\bigg) &> 1 - |A|\delta \quad \text{Taking the set complement}
+\end{align*}
+
+By definition of the argmax, $\bar{R_{a^*}} \geq \bar{R_{a^\dagger}}$, and $\hat{R_{a^\dagger}} \geq \hat{R_{a^*}}$.
+
+One possible ordering on the real number line is:
+$$\underbrace{\hat{R_{a^*}} --- \hat{R_{a^\dagger}} --- \overbrace{\bar{R_{a^\dagger}} --- \bar{R_{a^*}}}^{\epsilon}}_{<\gamma}$$
+
+The positions of $\hat{R_{a^\dagger}}$ and $\bar{R_{a^\dagger}}$ could be swapped with one another but it makes no difference in this case. What we want to show is that for some $\gamma$, the maximal $\epsilon$ is equal to $\gamma$ itself, without violating the inequalities specified by the argmaxes. $\epsilon$ is maximal when $\bar{R_{a^\dagger}} = \hat{R_{a^*}}$.
+
+Substituting $\epsilon=\gamma$ into the given equation in (b), we get $\delta' = |\mathcal{A}|\delta$
+
+\begin{align*}
+\epsilon &= \sqrt{\frac{\log(2|\mathcal A|/\delta')}{2n_{des}}} \\
+n_{des} &= \frac{\log(2|\mathcal A|/\delta')}{2\epsilon^2}
+\end{align*}
 
 \end{enumerate}
 

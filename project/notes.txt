@@ -1,0 +1,3 @@
+
+For the slippage term, only penalize for slippage along the contact force vector,
+as the task should be indifferent to slippage along the other directions.
