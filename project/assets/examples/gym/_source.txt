@@ -1,0 +1,1 @@
+https://github.com/openai/gym/tree/master/gym/envs/mujoco/assets

@@ -1,0 +1,22 @@
+
+https://openai.github.io/mujoco-py/build/html/reference.html
+
+http://www.mujoco.org/book/APIreference.html
+http://www.mujoco.org/book/XMLreference.html
+
+
+
+
+
+
+
+
+
+Check how striker.xml fuses flat plate onto end of arm.
+For our case we need a ball joint
+
+
+
+
+
+
