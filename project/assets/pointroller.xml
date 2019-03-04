@@ -40,7 +40,7 @@ Modified from examples/point.xml
     <!--Actuator http://www.mujoco.org/book/XMLreference.html#actuator
         For how gear interacts with different joints,
         see: http://www.mujoco.org/book/XMLreference.html#general -->
-    <motor name="motorx" gear="500" ctrllimited="true" ctrlrange="-1 1" joint="ballx" />
+    <motor name="motorx" gear="500" ctrllimited="false" ctrlrange="-1 1" joint="ballx" />
     <motor name="motory" gear="500" ctrllimited="true" ctrlrange="-1 1" joint="bally" />
   </actuator>
 </mujoco>

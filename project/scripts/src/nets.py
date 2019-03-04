@@ -8,7 +8,8 @@ class Flatten(nn.Module):
     Flatten any tensor into a vector.
     """
     def forward(self, x):
-        return x.view(x.size()[0], -1)
+        N = x.size()[0]
+        return x.view(N, -1)
 
 
 class PolicyNet(object):

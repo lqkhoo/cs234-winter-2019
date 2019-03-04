@@ -6,12 +6,18 @@ We shall be using Anaconda and Pytorch, alongside mujoco_py, which we will build
 
 1. Install CUDA 10 from https://developer.nvidia.com/cuda-downloads
 1. Install mujoco under ```%USERNAME%/.mujoco```. Put license key file mjkey.txt under ```/.mujoco```, and inside ```/bin``` of each installation. We will be working with mujoco1.5.
-1. Install Anaconda from https://www.anaconda.com/distribution/#download-section. Note the installation path
+1. Install Anaconda from https://www.anaconda.com/distribution/#download-section. Note down the installation path.
+    * Alternatively, get miniconda from https://docs.conda.io/en/latest/miniconda.html, since we only need a small subset of packages in Anaconda.
     * Add path to conda and /Scripts to environment variables.
-    * ```conda upgrade --all```
+    * You may need to get OpenSSL before you can continue. http://gnuwin32.sourceforge.net/packages/openssl.htm
+    ```
+    conda init
+    conda activate
+    conda upgrade --all
+    ```
     * Before using python or pip in any form, basically python commands other than ```conda``` itself, make sure to do ```conda activate``` to use the base env, otherwise modules may fail to load.
 1. Install mujoco_py.
-    * Clone/download mujoco_py from https://github.com/openai/mujoco-py
+    * Clone/download mujoco_py from https://github.com/openai/mujoco-py/releases/tag/1.50.1.0
     * Follow https://github.com/openai/mujoco-py/issues/253#issuecomment-446025520. Install Microsoft Visual Studio C++ Build Tools 2015.
     * Use the Visual C++ 2015 x64 Native Build Tools Command Prompt from ```C:\Program Files (x86)\Microsoft Visual C++ Build Tools```. cd to ```mujoco-py-master``` and execute:
         ```
@@ -20,7 +26,8 @@ We shall be using Anaconda and Pytorch, alongside mujoco_py, which we will build
         python setup.py install
         ```
     * If there are errors try: https://github.com/openai/mujoco-py/issues/253#issuecomment-446025520
-1. Install deepmind control suite for mujoco150. Generally dm_control and mujoco_py are separate and incompatible wrappers to mujoco, so you will have to pick between one or the other. We will be borrowing the models (xml files) to be included in our assets in either case, however. Not sure whether this needs to be run from within the native build tools command prompt but there's no harm in doing so.
+    * Do ```import mujoco_py``` in the Python interpreter to finish building.
+1. Install deepmind control suite for mujoco150. Generally dm_control and mujoco_py are separate and incompatible wrappers to mujoco, so we will have to pick between one or the other. We will be borrowing the models (xml files) to be included in our assets in either case, however. Not sure whether this needs to be run from within the native build tools command prompt but there's no harm in doing so.
     * Get the source from https://github.com/deepmind/dm_control/releases/tag/mujoco1.50
         ```
         pip install -r requirements.txt
@@ -29,10 +36,11 @@ We shall be using Anaconda and Pytorch, alongside mujoco_py, which we will build
     * Now set the environment variable 'MUJOCO_GL' to the value 'glfw'. Refer to:
         * https://github.com/deepmind/dm_control/issues/78
         * https://github.com/deepmind/dm_control/commit/276c6e8ce6dbcb8a037f8aa6a76475db4da41e6a
-1. Install pytorch.
+1. Install pytorch. https://pytorch.org/
     ```
     conda install pytorch torchvision cudatoolkit=10.0 -c pytorch
     ```
+    * Or on a machine without CUDA: ```conda install pytorch-cpu torchvision-cpu -c pytorch```
 1. Ensure imports within the interpreter:
     ```
     import numpy as np
@@ -43,3 +51,4 @@ We shall be using Anaconda and Pytorch, alongside mujoco_py, which we will build
 1. Run one of the samples from mujoco_py and make sure it works.
 1. Additional dependencies:
     * ```pip install imageio-ffmpeg``` to record video. Write still fails silently for mujoco_py. We'll use some other means like OBS to record.
+    
