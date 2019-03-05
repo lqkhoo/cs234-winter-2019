@@ -4,6 +4,8 @@ from mujoco_py.generated import const
 
 class Index(object):
     """
+    Lightweight indexer mapping names and types (body, geom, etc.) to their ids,
+    which act as index accessors to model parameters in mujoco.
     """
 
     def __init__(self, xml_filepath=None, mjmodel=None):

@@ -33,13 +33,30 @@ class Viewer(MjViewer):
 
     def raycast(self):
         """
-        Convenience wrapper for function.mjv_select
-        http://mujoco.org/book/APIreference.html#mjv_select
         Refer to:
         https://github.com/deepmind/dm_control/blob/92f9913013face0468442cd0964d5973ea2089ea/dm_control/viewer/renderer.py#L468
         Casts a ray at cursor position into the scene.
         Returns geomid of first geom it intersects, or -1 if no geom. Also returns world coordinates
         of intersection
+        """
+        cursor_worldcoords = np.zeros(3, dtype=np.float64)
+
+        # Window coordinates are (0,0) at top-left, (screenwidth, screenheight) at bottom-right
+        framebuffer_width, framebuffer_height = glfw.get_framebuffer_size(self.window)
+        window_width, window_height = glfw.get_window_size(self.window)
+        window_scaling = framebuffer_width * 1.0 / window_width
+        cursor_screen_coords = np.zeros(2, dtype=np.int32)
+        cursor_screen_coords[0], cursor_screen_coords[1] = glfw.get_cursor_pos(self.window)
+        cursor_screen_coords[0] = cursor_screen_coords[0] * window_scaling
+        cursor_screen_coords[1] = cursor_screen_coords[1] * window_scaling
+
+
+
+    def cursor_raycast(self):
+        """
+        Equivalent to function.mjv_select
+        http://mujoco.org/book/APIreference.html#mjv_select
+
         """
 
         cursor_worldcoords = np.zeros(3, dtype=np.float64)
@@ -73,6 +90,10 @@ class Viewer(MjViewer):
         if selected_body_id < 0:
             cursor_worldcoords = None
         return selected_body_id, cursor_worldcoords
+
+    
+    def move_body_to_cursor_ray(self):
+        pass
 
 
     def _cursor_pos_callback(self, window, xpos, ypos):

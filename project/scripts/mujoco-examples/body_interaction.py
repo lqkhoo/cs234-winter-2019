@@ -23,7 +23,7 @@ MODEL_XML = """
             <geom mass="1.0" pos="0 0 0" rgba="1 0 0 1" size="0.15" type="sphere"/>
 			<camera euler="0 0 0" fovy="40" name="rgb" pos="0 0 2.5"></camera>
         </body>
-        <body mocap="true" name="mocap" pos="0.5 0.5 0.5">
+        <body mocap="true" name="mocap" pos=".1 .1 .2">
 			<geom conaffinity="0" contype="0" pos="0 0 0" rgba="1.0 1.0 1.0 0.5" size="0.1 0.1 0.1" type="box"></geom>
 			<geom conaffinity="0" contype="0" pos="0 0 0" rgba="1.0 1.0 1.0 0.5" size="0.2 0.2 0.05" type="box"></geom>
 		</body>

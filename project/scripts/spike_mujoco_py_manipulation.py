@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
         # id_body = functions.mj_name2id(sim.model, const.OBJ_BODY, 'torso')
 
-        hovered_geom_id, hovered_world_coords = viewer.raycast()
+        hovered_geom_id, hovered_world_coords = viewer.cursor_raycast()
         print(hovered_geom_id)
         print(sim.data.geom_xpos[hovered_geom_id])
 
