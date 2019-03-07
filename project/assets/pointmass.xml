@@ -7,7 +7,7 @@
   <default>
     <joint armature="0" damping="0" limited="false" />
     <!-- Default geom is collisionless -->
-    <geom conaffinity="0" condim="3" density="100" friction="1 0.5 0.5" margin="0" rgba="1 1 0.5 0.7" material="mat-geom-default"/>
+    <geom conaffinity="2" condim="3" density="100" friction="1 0.5 0.5" margin="0" rgba="1 1 0.5 0.7" material="mat-geom-default"/>
   </default>
 
   <asset>
@@ -25,13 +25,13 @@
     <geom name="floor" type="plane" conaffinity="1" condim="3" pos="0 0 0" rgba="0.8 0.9 0.8 1" size="40 40 40" material="mat-floor" />
     <!-- Point mass with spherical collision geometry -->
     <body name="ball" pos="0 0 0">
-      <geom name="ball-geom" type="sphere" conaffinity="1" size="1" pos="0 0 1" />
+      <geom name="ball-geom" type="sphere" conaffinity="2" size="1" pos="0 0 1" />
       <joint name="joint-ballx" type="slide" axis="1 0 0" pos="0 0 0" />
       <joint name="joint-bally" type="slide" axis="0 1 0" pos="0 0 0" />
     </body>
     <!-- Collisionless target limited to x-y plane -->
-    <body name="target" pos="0 0 0" mass="0">
-      <geom name="target-geom" conaffinity="0" size="1" pos="0 0 1" />
+    <body name="target" pos="2 0 0">
+      <geom name="target-geom" type="sphere" conaffinity="0" size="1" pos="0 0 1" material="mat-target" />
       <joint name="joint-targetx" type="slide" axis="1 0 0" pos="0 0 0" />
       <joint name="joint-targety" type="slide" axis="0 1 0" pos="0 0 0" />
     </body>
@@ -39,8 +39,8 @@
 
   <actuator>
     <!-- All actuators should have a control range as a force limiter -->
-    <motor name="actuator-x" gear="500" ctrllimited="false" ctrlrange="-1 1" joint="ballx" />
-    <motor name="actuator-y" gear="500" ctrllimited="true" ctrlrange="-1 1" joint="bally" />
+    <motor name="actuator-x" gear="500" joint="joint-ballx" />
+    <motor name="actuator-y" gear="500" joint="joint-bally" />
   </actuator>
 
   <sensor>

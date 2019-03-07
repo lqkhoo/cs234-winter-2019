@@ -1,7 +1,7 @@
 from mujoco_py import MjSim
 import abc
-from idx import Index
-from viewer import Viewer
+from src.indexer import Index
+from src.viewer import Viewer
 
 class Task(metaclass=abc.ABCMeta):
     """
@@ -13,9 +13,9 @@ class Task(metaclass=abc.ABCMeta):
         self.render = render
         self.sim = mjsim
         self.viewer = Viewer(mjsim)
-        self.model = self.sim.model
-        self.data = self.model.data
-        self.idx = Index(mjmodel=self.model)
+        self.model = mjsim.model
+        self.data = mjsim.data
+        self.idx = Index(mjmodel=mjsim.model)
 
     @abc.abstractmethod
     def reset(self):

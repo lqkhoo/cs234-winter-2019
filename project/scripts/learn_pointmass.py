@@ -3,7 +3,7 @@ import mujoco_py.generated.const as const
 import math
 import os
 import numpy as np
-from src.idx import Index
+from src.indexer import Index
 from src.viewer import Viewer
 from src.nets import Flatten
 from src.task import Task
@@ -65,7 +65,7 @@ class PointMass(Task):
     decelerate maximally until rest.
 
     The optimal controller is:
-    a = a_max: if x > u^2 / 2a_max
+    a = a_max: if d > u^2 / 2a_max
     a = -a_max: otherwise
     """
 
@@ -82,17 +82,17 @@ class PointMass(Task):
         self.actuator_x = self.idx.id_of('actuator-x', const.OBJ_ACTUATOR)
         self.actuator_y = self.idx.id_of('actuator-y', const.OBJ_ACTUATOR)
 
-        self.ball_pos = self.data.xpos[self.ball]
+        self.ball_pos = self.data.body_xpos[self.ball]
         self.ball_vel = self.data.cvel[self.ball]
-        self.target_pos = self.data.xpos[self.target]
+        self.target_pos = self.data.body_xpos[self.target]
 
         assert(self.model.actuator_ctrllimited[self.actuator_x] == 1)
         assert(self.model.actuator_ctrllimited[self.actuator_y] == 1)
         # Todo: find max acceleration
         # Todo: find 'mass'
-        self.accel = self.data.cacc
+        self.accel = self.data.qacc_unc
         
-        self.displacement = self.ball - self.target
+        self.displacement = self.ball_pos - self.target_pos
 
 
     def reset(self):
@@ -113,9 +113,25 @@ class PointMass(Task):
 
 
     def expert_output(self):
-        d = self.displacement
-        u = self.ball_vel
-        pass
+
+        m = 1.19366207
+        a_max = 1.0 / m
+
+        for dim in range(3):
+            ball_pos = self.data.body_xpos[self.ball]
+            target_pos = self.data.body_xpos[self.target]
+            displacement = target_pos - ball_pos
+            ball_vel = self.data.qvel[0:2]
+            sign = 1.0 if displacement[dim] > 0 else -1
+
+            if dim >= 2: # ignore z-axis
+                continue
+            stopping_distance = ball_vel[dim] * ball_vel[dim] / (2 * a_max)
+            
+            if np.abs(displacement[dim]) > stopping_distance:
+                self.ctrl[dim] = sign * a_max
+            else:
+                self.ctrl[dim] = -ball_vel[dim] * ball_vel[dim] / 2 / 1.19366207
 
 
     def reward(self, timestep):
@@ -131,12 +147,22 @@ class PointMass(Task):
             if self.time >= 100:
                 break
 
+            self.expert_output()
+
+            ball_pos = self.data.body_xpos[self.ball]
+            target_pos = self.data.body_xpos[self.target]
+            displacement = target_pos - ball_pos
+            ball_vel = self.data.qvel
+            ball_accel = self.data.qacc[0:2]
+            stopping_distance = ball_vel * ball_vel / 2
+            print("a{}\n v{}\n d{}\nY{}".format(ball_accel, ball_vel, displacement, stopping_distance))
+
             sim.step()
 
 
 
 if __name__ == '__main__':
-    MODEL_PATH = '../assets/pointroller.xml'
+    MODEL_PATH = '../assets/pointmass.xml'
     model = load_model_from_path(MODEL_PATH)
     sim = MjSim(model)
     task = PointMass(sim, render=True)

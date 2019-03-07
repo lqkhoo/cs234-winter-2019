@@ -31,7 +31,7 @@ class Index(object):
         return self._id2name[key]
 
 
-    def _index_model(self, mjmodel=None, xml_filepath=None):
+    def _index_model(self, xml_filepath=None, mjmodel=None):
         assert (not (mjmodel is None and xml_filepath is None))
         if mjmodel is not None:
             self.mjmodel = mjmodel
