@@ -98,6 +98,8 @@ class PointMass(Task):
     def reset(self):
         self.sim.reset()
 
+
+
         # Initialize the target to within some distance d1 of the origin
         D1 = 0 # Mean distance between target and origin (per dimension)
         S1 = 5 # Sdev of distance between target and origin (per dimension)
@@ -112,6 +114,7 @@ class PointMass(Task):
         self.ball_vel = V3 + np.random.normal(0, 1, (2, )) * S3
 
 
+    
     def expert_output(self):
 
         m = 1.19366207
@@ -132,6 +135,7 @@ class PointMass(Task):
                 self.ctrl[dim] = sign * a_max
             else:
                 self.ctrl[dim] = -ball_vel[dim] * ball_vel[dim] / 2 / 1.19366207
+    
 
 
     def reward(self, timestep):
