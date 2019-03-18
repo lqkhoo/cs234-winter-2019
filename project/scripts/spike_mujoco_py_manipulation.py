@@ -8,7 +8,7 @@ import numpy as np
 
 if __name__ == '__main__':
     multiprocessing.freeze_support()
-    MODEL_PATH = '../assets/examples/dm/humanoid.xml'
+    MODEL_PATH = '../assets/examples/gym/ant.xml'
     model = load_model_from_path(MODEL_PATH)
 
     sim = MjSim(model)

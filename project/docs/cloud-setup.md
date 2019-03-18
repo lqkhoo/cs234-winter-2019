@@ -19,6 +19,13 @@ We shall use the lightweight xfce4 desktop environment.
     echo xfce4-session > .xsession
     sudo service xrdp restart
     ```
+    * For AWS, do the following instead:
+    ```
+    sudo apt update
+    sudo apt upgrade
+    sudo apt install lxde
+    sudo apt install xrdp
+    ```
 2. Now set the root password:
     ```
     sudo -i passwd
