@@ -105,9 +105,9 @@ class config_cheetah:
             self.max_ep_len = self.batch_size
 
 
-class config_ant:
+class config_antx(object):
     def __init__(self):
-        self.env_name="Ant-v3"
+        self.env_name="antx"
         self.record = True
 
         # output config
@@ -138,6 +138,21 @@ class config_ant:
         if self.max_ep_len < 0:
             self.max_ep_len = self.batch_size
 
+class config_antxneg(config_antx):
+    def __init__(self):
+        super().__init__()
+        self.env_name="antxneg"
+
+class config_anty(config_antx):
+    def __init__(self):
+        super().__init__()
+        self.env_name="anty"
+
+class config_antyneg(config_antx):
+    def __init__(self):
+        super().__init__()
+        self.env_name="antyneg"
+
 
 def get_config(env_name, baseline):
     if env_name == 'cartpole':
@@ -146,5 +161,11 @@ def get_config(env_name, baseline):
         return config_pendulum(baseline)
     elif env_name == 'cheetah':
         return config_cheetah(baseline)
-    elif env_name == 'ant':
-        return config_ant()
+    elif env_name == 'antx':
+        return config_antx()
+    elif env_name == 'antxneg':
+        return config_antxneg()
+    elif env_name == 'anty':
+        return config_anty()
+    elif env_name == 'antyneg':
+        return config_antyneg()
