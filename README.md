@@ -34,6 +34,8 @@
     * 4.3: -4 "Applied 4b, but didn't add right terms to get recursive term."
     * 4.4: -1 Missing step
 
+!["Midterm class distribution'](midterm-histo.png)
+
 * Quiz (SCPD): 10.1/12.22
     * Q1: -1 Incorrect
     * Q4: -1 Incorrect
