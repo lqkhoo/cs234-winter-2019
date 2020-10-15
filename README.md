@@ -24,7 +24,7 @@
 * HW3: 46.0/50.0
     * 2.1: -1 Only computes n_des / missing factor of A
     * 2.1: -3 To select \epsilon optimal arm, actually need each arm accurate to within \epsilon / 2
-* Midterm: 64.0/80.0. Class stats min=9.0/med=57.0/max=77.0/mean=56.05/sdev=10.55
+* Midterm: 65.5/80.0. Class stats min=9.0/med=57.0/max=77.0/mean=56.05/sdev=10.55
     * 1.2: -2 Incorrect
     * 1.10: -1 No / incorrect explanation
     * 2.1: -2 "You have shown the right thing, but did not complete the induction."
