@@ -16,8 +16,8 @@
     * 3.3 (c): -1 Wrong Q*(s1, go)
     * 3.3 (c): "You forgot to calculate Q*(s1, a) here"
     * 3.4 (d): -5 Infinity bound norm not satisfied (need \tilde{Q} within epsilon from Q, in terms of the infinity norm)
-    * 3.4: -5 Resulting value function does not make the bound in (b) tight.
-    * "The function asks you to define a ~Q. But I cannot see where they are. Second, it will be impossible to have (~Q - Q*) = 0 while making the inequality tight. The desired ~Q will assign the same value (1+gamma)/(1-gamma)2epsilon to both ~Q(s1, stay) and ~Q(s1, go)."
+    * 3.4 (d): -5 Resulting value function does not make the bound in (b) tight.
+    * 3.4 (d): "The function asks you to define a ~Q. But I cannot see where they are. Second, it will be impossible to have (~Q - Q*) = 0 while making the inequality tight. The desired ~Q will assign the same value (1+gamma)/(1-gamma)2epsilon to both ~Q(s1, stay) and ~Q(s1, go)."
 * HW2: 61.0/67.0
     * 5.2: -2 Missing/incorrect count for linear model
     * 6.1: -4 Incorrect
